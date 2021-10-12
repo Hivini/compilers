@@ -1,22 +1,26 @@
-# -----------------------------------------------------------------------------
-# calc.py
-#
-# Simple Compler version yacc and lex
-# -----------------------------------------------------------------------------
+import ply.yacc as yacc
+import ply.lex as lex
 
-import sys
-sys.path.insert(0, "../..")
 
-tokens = (
-    'NAME', 'INUMBER', 'FNUMBER'
-)
 
-literals = ['=', '+', '-', 'i', 'f', 'p']
+literals = ['=', '+', '-', '*', '/', '(', ')']
+reserved = { 
+    'int' : 'INTDEC',
+    'float' : 'FLOATDEC',
+    'print' : 'PRINT'
+ }
+
+tokens = [
+    'INUMBER', 'FNUMBER', 'NAME'
+] + list(reserved.values())
+
 
 # Tokens
 
-t_NAME = r'[a-eg-hj-oq-z]'
-
+def t_NAME(t):
+    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = reserved.get(t.value,'NAME')    # Check for reserved words
+    return t
 
 def t_FNUMBER(t):
     r'\d+\.\d+'
@@ -29,6 +33,7 @@ def t_INUMBER(t):
     t.value = int(t.value)
     return t
 
+
 t_ignore = " \t"
 
 def t_newline(t):
@@ -40,55 +45,77 @@ def t_error(t):
     t.lexer.skip(1)
 
 # Build the lexer
-import ply.lex as lex
 lexer = lex.lex()
 
 # Parsing rules
 
 precedence = (
     ('left', '+', '-'),
+    ('left', '*', '/'),
+    ('right', 'UMINUS'),
 )
 
 # dictionary of names
 names = {}
-abstract_tree = []
+abstractTree = []
 
-def p_statement_declareInt(p):
-    'statement : "i" NAME'
-    names[p[2]] = {"type": "INT", "value": None}
+def p_statement_declare_int(p):
+    '''statement : INTDEC NAME is_assing
+    '''
+    names[p[2]] = { "type": "INT", "value":0}
 
-def p_statement_declareFloat(p):
-    'statement : "f" NAME'
-    names[p[2]] = {"type": "FLOAT", "value": None}
+def p_is_assing(p):
+    '''is_assing : "=" expression 
+                | '''
+    if 4 in p:
+        names[p[2]] = { "type": "INT", "value":p[4]}
+
+
+def p_statement_declare_float(p):
+    'statement : FLOATDEC NAME'
+    names[p[2]] = { "type": "FLOAT", "value":0}
+
+def p_statement_print(p):
+    '''statement : PRINT '(' expression ')' '''
+    print(p[3])
 
 def p_statement_assign(p):
     'statement : NAME "=" expression'
     if p[1] not in names:
-        raise Exception('Declare variable before using it.')
-    if names[p[1]]['type'] == 'INT' and isinstance(p[3], float):
-        raise Exception('Float cannot be assigned to type variable type int.')
-    if names[p[1]]['type'] == 'FLOAT' and isinstance(p[3], int):
-        names[p[1]]['value'] = float(p[3])
-    else:
-        names[p[1]]['value'] = p[3]
+        print ( "You must declare a variable before using it")
+    names[p[1]]["value"] = p[3]
 
 
 def p_statement_expr(p):
-    '''statement : "p" expression'''
-    print(p[2])
+    'statement : expression'
+    # print(p[1])
 
 
 def p_expression_binop(p):
     '''expression : expression '+' expression
-                  | expression '-' expression'''
+                  | expression '-' expression
+                  | expression '*' expression
+                  | expression '/' expression'''
     if p[2] == '+':
         p[0] = p[1] + p[3]
     elif p[2] == '-':
         p[0] = p[1] - p[3]
 
+
+def p_expression_uminus(p):
+    "expression : '-' expression %prec UMINUS"
+    p[0] = -p[2]
+
+
+def p_expression_group(p):
+    "expression : '(' expression ')'"
+    p[0] = p[2]
+
+
 def p_expression_inumber(p):
     "expression : INUMBER"
     p[0] = p[1]
+
 
 def p_expression_fnumber(p):
     "expression : FNUMBER"
@@ -98,11 +125,7 @@ def p_expression_fnumber(p):
 def p_expression_name(p):
     "expression : NAME"
     try:
-        p[0] = names[p[1]]['value']
-        if p[0] == None:
-            print('%s has not been assigned a value, default to 0.' % p[1])
-            names[p[1]]['value'] = 0
-            p[0] = 0
+        p[0] = names[p[1]]["value"]
     except LookupError:
         print("Undefined name '%s'" % p[1])
         p[0] = 0
@@ -110,26 +133,19 @@ def p_expression_name(p):
 
 def p_error(p):
     if p:
-        print("Syntax error at '%s'" % p.value)
+        print(p)
+        print("Syntax error at line '%s' character '%s'" % (p.lexpos, p.lineno) )
     else:
         print("Syntax error at EOF")
 
-import ply.yacc as yacc
+
 parser = yacc.yacc()
 
-file = open('code.txt')
-s = file.readlines()
-file.close()
-for l in s:
-    print(l)
-    yacc.parse(l)
-
-# Other flow, in case you want it.
-# while True:
-#     try:
-#         s = input('calc > ')
-#     except EOFError:
-#         break
-#     if not s:
-#         continue
-#     yacc.parse(s)
+while True:
+    try:
+        s = input('calc > ')
+    except EOFError:
+        break
+    if not s:
+        continue
+    yacc.parse(s)
