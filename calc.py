@@ -1,6 +1,7 @@
+import argparse
+import os
 import ply.yacc as yacc
 import ply.lex as lex
-
 
 
 literals = ['=', '+', '-', '*', '/', '(', ')']
@@ -86,7 +87,7 @@ def p_is_assign(p):
     if len(p) == 3:
         p[0].type = p[2].type
         p[0].val = p[2].val
-        p[0].children = p[2].children
+        p[0].childrens = p[2].childrens
 
 def p_statement_declare_float(p):
     'statement : FLOATDEC NAME is_assign'
@@ -157,12 +158,23 @@ def p_error(p):
 
 
 parser = yacc.yacc()
-
-while True:
-    try:
-        s = input('calc > ')
-    except EOFError:
-        break
-    if not s:
-        continue
-    yacc.parse(s)
+argsParser = argparse.ArgumentParser()
+argsParser.add_argument(
+    "-file_path", help="Location of the file to compile, relative to current location.")
+args = argsParser.parse_args()
+if not args.file_path or not os.path.isfile(args.file_path):
+    print(f"File was not provided or does not exist. Entering manual mode.")
+    while True:
+        try:
+            s = input('calc > ')
+        except EOFError:
+            break
+        if not s:
+            continue
+        yacc.parse(s)
+else:
+    with open(args.file_path) as file:
+        lines = file.readlines()
+        for line in lines:
+            print('> ', line, end='')
+            yacc.parse(line)
