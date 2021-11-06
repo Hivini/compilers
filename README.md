@@ -3,5 +3,5 @@
 
 ## How to run
 ```
-python -m compiler
+python -m compiler FILE_NAME.txt
 ```
