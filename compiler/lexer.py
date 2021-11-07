@@ -30,6 +30,11 @@ class Lexer:
     # A string containing ignored characters (spaces and tabs)
     t_ignore = ' \t'
 
+    def __init__(self) -> None:
+        self.n_errors = 0
+        self.errorToken = ''
+        self.errorLine = -1
+
     def t_NAME(self, t):
         r'[a-zA-Z_][a-zA-Z_0-9]*'
         t.type = self.reserved.get(t.value, LexerTypes.NAME.name)
@@ -52,7 +57,9 @@ class Lexer:
         t.lexer.lineno += t.value.count("\n")
 
     def t_error(self, t):
-        # TODO(hivini): Add a way to handle store errors
+        self.n_errors += 1
+        self.errorLine = t.lexer.lineno - 1
+        self.errorToken = t.value[0]
         t.lexer.skip(1)
 
     def createLexer(self):
