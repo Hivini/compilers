@@ -12,7 +12,7 @@ class LexerTypes(Enum):
     PRINT = 6
 
 
-class LexerManager:
+class Lexer:
     # List of literals to avoid writing simple regexp for each one.
     literals = ['+', '-', '*', '/', '(', ')', '=']
     # Reserved keywords
@@ -38,11 +38,13 @@ class LexerManager:
     def t_FNUMBER(self, t):
         r'\d+\.\d+'
         t.value = float(t.value)
+        t.type = LexerTypes.FLOATNUM.name
         return t
 
     def t_INUMBER(self, t):
         r'\d+'
         t.value = int(t.value)
+        t.type = LexerTypes.INTNUM.name
         return t
 
     def t_newline(self, t):
@@ -50,7 +52,7 @@ class LexerManager:
         t.lexer.lineno += t.value.count("\n")
 
     def t_error(self, t):
-        print("Illegal character '%s'" % t.value[0])
+        # TODO(hivini): Add a way to handle store errors
         t.lexer.skip(1)
 
     def createLexer(self):
