@@ -12,6 +12,7 @@ class Parser:
         self.lexer = self.lexerInstance.createLexer()
         self.tokens = self.lexerInstance.tokens
         self.start = 'program'
+        self.total_errors = 0
 
     def p_program(self, p):
         '''program : expression program
@@ -30,13 +31,7 @@ class Parser:
         p[0] = p[1]
 
     def p_error(self, p):
-        print(p)
-        if p:
-            print(p)
-            print("Syntax error at line '%s' character '%s'" %
-                  (p.lineno, p.lexpos))
-        else:
-            print("Syntax error at EOF")
+        self.total_errors += 1
 
     def createParser(self):
         parser = yacc.yacc(module=self)
