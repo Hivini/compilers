@@ -10,23 +10,61 @@ class LexerTypes(Enum):
     INTDCL = 4
     FLOATDCL = 5
     PRINT = 6
+    AND_OP = 7
+    OR_OP = 8
+    BOOL_TRUE = 9
+    BOOL_FALSE = 10
+    BOOL_DCL = 11
+    EQUALS = 12
+    NOT_EQUAL = 13
+    GREATER_EQUAL = 14
+    LESS_EQUAL = 15
+    WHILE = 16
+    FOR = 17
+    IF = 18
+    ELIF = 19
+    ELSE = 20
+    STRING_DCL = 21
+    SENTENCE_END = 22
 
 
 class Lexer:
     # List of literals to avoid writing simple regexp for each one.
-    literals = ['+', '-', '*', '/', '(', ')', '=']
+    literals = ['+', '-', '*', '/', '=', '^', '>', '<', '(', ')', '{', '}', '"']
     # Reserved keywords
     reserved = {
         'int': LexerTypes.INTDCL.name,
         'float': LexerTypes.FLOATDCL.name,
-        'print': LexerTypes.PRINT.name
+        'print': LexerTypes.PRINT.name,
+        'and': LexerTypes.AND_OP.name,
+        'or': LexerTypes.OR_OP.name,
+        'if': LexerTypes.IF.name,
+        'elif': LexerTypes.ELIF.name,
+        'else': LexerTypes.ELSE.name,
+        'while': LexerTypes.WHILE.name,
+        'for': LexerTypes.FOR.name,
+        'string': LexerTypes.STRING_DCL.name,
+        'bool': LexerTypes.BOOL_DCL.name,
+        'true': LexerTypes.BOOL_TRUE.name,
+        'false': LexerTypes.BOOL_FALSE.name,
     }
     # Tokens that determine the functions
     tokens = [
         LexerTypes.INTNUM.name,
         LexerTypes.FLOATNUM.name,
-        LexerTypes.NAME.name
+        LexerTypes.NAME.name,
+        LexerTypes.EQUALS.name,
+        LexerTypes.NOT_EQUAL.name,
+        LexerTypes.GREATER_EQUAL.name,
+        LexerTypes.LESS_EQUAL.name,
+        LexerTypes.SENTENCE_END.name,
     ] + list(reserved.values())
+
+    t_EQUALS = r'=='
+    t_NOT_EQUAL = r'!='
+    t_GREATER_EQUAL = r'>='
+    t_LESS_EQUAL = r'<='
+    t_SENTENCE_END = r';'
     # A string containing ignored characters (spaces and tabs)
     t_ignore = ' \t'
 
