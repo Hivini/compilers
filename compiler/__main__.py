@@ -1,9 +1,10 @@
 import argparse
 import sys
 import os
+from compiler.lexer import Lexer
 
 from compiler.logger import Logger
-from compiler.lexer import Lexer
+from compiler.parser import Parser
 
 
 def Run():
@@ -16,9 +17,6 @@ def Run():
         "file_path", help="Location of the file to compile, relative to current location.")
     args = parser.parse_args()
     file_path = args.file_path
-
-    lexerInstance = Lexer()
-    lexer = lexerInstance.createLexer()
 
     # Open file
     if not os.path.isfile(file_path):
@@ -33,16 +31,22 @@ def Run():
         logger.LogError(f'{file_path} could not be opened!')
         sys.exit(1)
 
+    lexerInstance = Lexer()
+    lexer = lexerInstance.createLexer()
     lexer.input(program)
     while True:
         tok = lexer.token()
-        if not tok:
-            break
         if lexerInstance.n_errors != 0:
             errorMessage = f'Invalid token \'{lexerInstance.errorToken}\' at line {lexerInstance.errorLine}'
             errorLine = lines[lexerInstance.errorLine]
             logger.LogError(f'{errorMessage}:\n\t{errorLine}')
             sys.exit(1)
+        if not tok:
+            break
+
+    parserInstance = Parser()
+    parser = parserInstance.createParser()
+    parser.parse(program)
     logger.LogSuccess('Successfully compiled!')
 
 
