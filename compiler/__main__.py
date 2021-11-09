@@ -7,6 +7,15 @@ from compiler.logger import Logger
 from compiler.parser import Parser
 
 
+def PrintAST(logger, current, depth):
+    spaces = '\t'*depth
+    logger.LogDebug(f'{spaces}-{current.type.name}')
+    if current.value:
+        logger.LogDebug(f'{spaces}| {current.value}')
+    for c in current.children:
+        PrintAST(logger, c, depth+1)
+
+
 def Run():
     # Create logger
     logger = Logger()
@@ -46,7 +55,8 @@ def Run():
 
     parserInstance = Parser()
     parser = parserInstance.createParser()
-    parser.parse(program)
+    root = parser.parse(program)
+    PrintAST(logger, root, 0)
     logger.LogSuccess('Successfully compiled!')
 
 
