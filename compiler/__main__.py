@@ -17,15 +17,17 @@ def PrintAST(logger, current, depth):
 
 
 def Run():
-    # Create logger
-    logger = Logger()
-
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "file_path", help="Location of the file to compile, relative to current location.")
+    parser.add_argument(
+        "-v", "--verbose", help="Add output prints to show debug elements.", action="store_true")
     args = parser.parse_args()
     file_path = args.file_path
+
+    # Create logger
+    logger = Logger(args.verbose)
 
     # Open file
     if not os.path.isfile(file_path):

@@ -5,8 +5,12 @@ class Logger:
     ERROR = '\033[91m'
     ENDC = '\033[0m'
 
+    def __init__(self, debug: bool) -> None:
+        self.debug = debug
+
     def LogDebug(self, message: str):
-        print(self._CreateMessage(self.DEBUG, message))
+        if (self.debug):
+            print(self._CreateMessage(self.DEBUG, message))
 
     def LogError(self, message: str):
         print(self._CreateMessage(self.ERROR, f'ERROR: {message}'))
