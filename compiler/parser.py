@@ -19,6 +19,9 @@ class TreeNode:
         else:
             self.children = []
         self.value = value
+    
+    def __str__(self) -> str:
+        return f'{self.type.name}'
 
 
 class Parser:
@@ -36,7 +39,9 @@ class Parser:
                     | expression
         '''
         if len(p) == 3:
-            p[0] = TreeNode(ASTTypes.PROGRAM, [p[1], p[2]])
+            children = [p[1]]
+            children.extend(p[2].children)
+            p[0] = TreeNode(ASTTypes.PROGRAM, children)
         else:
             p[0] = TreeNode(ASTTypes.PROGRAM, [p[1]])
 
