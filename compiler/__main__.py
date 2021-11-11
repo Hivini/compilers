@@ -58,8 +58,12 @@ def Run():
     parserInstance = Parser()
     parser = parserInstance.createParser()
     root = parser.parse(program)
-    PrintAST(logger, root, 0)
-    logger.LogSuccess('Successfully compiled!')
+    if (args.verbose):
+        PrintAST(logger, root, 0)
+    if parserInstance.total_errors > 0:
+        logger.LogError("Problem!")
+    else:
+        logger.LogSuccess('Successfully compiled!')
 
 
 if __name__ == '__main__':
