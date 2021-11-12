@@ -18,6 +18,8 @@ class ASTTypes(Enum):
     INT_DCL = 5
     FLOAT = 6
     FLOAT_DCL = 7
+    STRING = 8
+    STRING_DCL = 9
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
@@ -29,6 +31,7 @@ class ASTTypes(Enum):
 class VariableTypes(Enum):
     INT = 1
     FLOAT = 2
+    STRING = 3
 
 
 class Variable:
@@ -111,6 +114,13 @@ class Parser:
         self.names[p[2]] = Variable(VariableTypes.FLOAT, p[3].value)
         p[0] = tmp
 
+    def p_statement_declare_string(self, p):
+        '''statement : STRING_DCL NAME assignment
+        '''
+        tmp = TreeNode(ASTTypes.STRING_DCL, children=[p[3]], value=p[2])
+        self.names[p[2]] = Variable(VariableTypes.STRING, p[3].value)
+        p[0] = tmp
+
     def p_assignment(self, p):
         '''assignment : '=' declaration '''
         p[0] = TreeNode(ASTTypes.ASSIGN, children=[p[2]], value=p[2].value)
@@ -157,9 +167,14 @@ class Parser:
         '''declaration : INTNUM '''
         p[0] = TreeNode(ASTTypes.INT, value=p[1])
 
-    def p_expression_floatnumn(self, p):
+    def p_expression_floatnum(self, p):
         '''declaration : FLOATNUM '''
         p[0] = TreeNode(ASTTypes.FLOAT, value=p[1])
+
+    def p_expression_string(self, p):
+        '''declaration : STRING '''
+        print('aaa')
+        p[0] = TreeNode(ASTTypes.STRING, value=p[1])
 
     def p_expression_name(self, p):
         '''declaration : NAME '''
@@ -169,6 +184,7 @@ class Parser:
             self._addError(f'Variable {p[1]} does not exist.')
 
     def p_error(self, p):
+        print(p)
         self._addError('Syntax error!')
 
     def createParser(self):

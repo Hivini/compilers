@@ -42,6 +42,17 @@ class TestParser(unittest.TestCase):
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.FLOAT)
 
+    def testAssignString(self):
+        tree = self.parser.parse('string a = "hola";')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.STRING_DCL)
+        self.assertEqual(tree.children[0].value, 'a')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, '"hola"')
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.STRING)
+
     def testAssignSum(self):
         tree = self.parser.parse('int a = 2 + 3;')
         self.assertEqual(len(tree.children), 1)
