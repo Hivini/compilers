@@ -87,7 +87,11 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].value, 4)
         self.assertEqual(self.instance.total_errors, 0)
 
-    def testPrintExpInvalid(self):
+    def testIntAssignedFloat(self):
+        tree = self.parser.parse('int b = 5 / 4;')
+        self.assertEqual(self.instance.total_errors, 1)
+
+    def testNoEndSentence(self):
         tree = self.parser.parse('print(a)')
         self.assertEqual(tree, None)
         self.assertEqual(self.instance.total_errors, 1)

@@ -63,7 +63,12 @@ class Parser:
     def p_statement_declare_int(self, p):
         '''statement : INTDCL NAME assignment
         '''
-        # TODO(hivini): Check for floats.
+        if type(p[3].value) == float:
+            if p[3].value.is_integer():
+                p[3].value = int(p[3].value)
+            else:
+                self.total_errors += 1
+                return
         tmp = TreeNode(ASTTypes.INT_DCL, children=[p[3]], value=p[2])
         self.names[p[2]] = { "type": "INT", "value": p[3].value}
         p[0] = tmp
