@@ -12,10 +12,27 @@ class ASTTypes(Enum):
     ASSIGN = 3
     INT = 4
     INT_DCL = 5
+    FLOAT = 6
+    FLOAT_DCL = 7
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
     DIVISION = 53
+
+class VariableTypes(Enum):
+    INT = 1
+    FLOAT = 2
+
+class Variable:
+    def __init__(self, type: VariableTypes, value: any) -> None:
+        self.type = type
+        self.value = value
+    
+    def __str__(self) -> str:
+        return f'| Type: {self.type}, Value: {self.value} |'
+
+    def __repr__(self) -> str:
+        return f'| Type: {self.type}, Value: {self.value} |'
 
 
 class TreeNode:
@@ -70,9 +87,15 @@ class Parser:
                 self.total_errors += 1
                 return
         tmp = TreeNode(ASTTypes.INT_DCL, children=[p[3]], value=p[2])
-        self.names[p[2]] = { "type": "INT", "value": p[3].value}
+        self.names[p[2]] = Variable(VariableTypes.INT, p[3].value)
         p[0] = tmp
-        print(self.names)
+
+    def p_statement_declare_FLOAT(self, p):
+        '''statement : FLOATDCL NAME assignment
+        '''
+        tmp = TreeNode(ASTTypes.FLOAT_DCL, children=[p[3]], value=p[2])
+        self.names[p[2]] = Variable(VariableTypes.FLOAT, p[3].value)
+        p[0] = tmp
 
     def p_assignment(self, p):
         '''assignment : '=' declaration '''
@@ -107,6 +130,10 @@ class Parser:
     def p_expression_intnum(self, p):
         '''declaration : INTNUM '''
         p[0] = TreeNode(ASTTypes.INT, value=p[1])
+
+    def p_expression_floatnumn(self, p):
+        '''declaration : FLOATNUM '''
+        p[0] = TreeNode(ASTTypes.FLOAT, value=p[1])
 
     def p_expression_name(self, p):
         '''declaration : NAME '''

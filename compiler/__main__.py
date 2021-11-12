@@ -63,6 +63,7 @@ def Run():
     if parserInstance.total_errors > 0:
         logger.LogError("Problem!")
     else:
+        logger.LogDebug(parserInstance.names)
         logger.LogSuccess('Successfully compiled!')
 
 

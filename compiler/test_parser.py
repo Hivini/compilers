@@ -29,6 +29,17 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.INT)
         self.assertEqual(self.instance.total_errors, 0)
 
+    def testAssignFloat(self):
+        tree = self.parser.parse('float a = 2.2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.FLOAT_DCL)
+        self.assertEqual(tree.children[0].value, 'a')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, 2.2)
+        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.FLOAT)
+        self.assertEqual(self.instance.total_errors, 0)
+
     def testAssignSum(self):
         tree = self.parser.parse('int a = 2 + 3;')
         self.assertEqual(len(tree.children), 1)
@@ -88,7 +99,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(self.instance.total_errors, 0)
 
     def testIntAssignedFloat(self):
-        tree = self.parser.parse('int b = 5 / 4;')
+        self.parser.parse('int b = 5 / 4;')
         self.assertEqual(self.instance.total_errors, 1)
 
     def testNoEndSentence(self):
