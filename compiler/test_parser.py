@@ -161,6 +161,9 @@ class TestParser(unittest.TestCase):
     def testIntAssignedFloat(self):
         self.assertRaises(ParserError, self.parser.parse, 'int b = 5 / 4;')
 
+    def testDivisionByZero(self):
+        self.assertRaises(ParserError, self.parser.parse, 'float coolVar = 30 / (2*3 - 6);')
+
     def testNoEndSentence(self):
         code = '''int a = 2;
         print(a)'''

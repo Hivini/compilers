@@ -157,7 +157,7 @@ class Parser:
                             value=p[1].value * p[3].value, children=[p[1], p[3]])
         elif p[2] == '/':
             if p[3].value == 0:
-                print('Division times 0 :(')
+                self._addError('Division by Zero :(')
             else:
                 p[0] = TreeNode(ASTTypes.DIVISION, value=p[1].value /
                                 p[3].value, children=[p[1], p[3]])
@@ -201,7 +201,6 @@ class Parser:
             self._addError(f'Variable {p[1]} does not exist.')
 
     def p_error(self, p):
-        print(p)
         self._addError('Syntax error!')
 
     def createParser(self):
