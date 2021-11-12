@@ -22,6 +22,7 @@ class ASTTypes(Enum):
     MULTIPLICATION = 52
     DIVISION = 53
     UMINUS = 54
+    EXPONENT = 55
 
 class VariableTypes(Enum):
     INT = 1
@@ -56,6 +57,7 @@ class Parser:
     precedence = (
         ('left', '+', '-'),
         ('left', '*', '/'),
+        ('left', '^'),
         ('right','UMINUS'),
     )
     names = {}
@@ -120,6 +122,7 @@ class Parser:
                     | declaration '-' declaration
                     | declaration '*' declaration
                     | declaration '/' declaration
+                    | declaration '^' declaration
         '''
         if p[2] == '+':
             p[0] = TreeNode(ASTTypes.SUM, value=p[1].value + p[3].value, children=[p[1], p[3]])
@@ -132,6 +135,8 @@ class Parser:
                 print('Division times 0 :(')
             else:
                 p[0] = TreeNode(ASTTypes.DIVISION, value=p[1].value / p[3].value, children=[p[1], p[3]])
+        elif p[2] == '^':
+            p[0] = TreeNode(ASTTypes.EXPONENT, value=pow(p[1].value, p[3].value), children=[p[1], p[3]])
 
     def p_expression_group(self, p):
         '''declaration : '(' declaration ')' '''

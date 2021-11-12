@@ -84,6 +84,17 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.DIVISION)
         self.assertEqual(len(tree.children[0].children[0].children[0].children), 2)
 
+    def testAssignExponent(self):
+        tree = self.parser.parse('int a = 2^6;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
+        self.assertEqual(tree.children[0].value, 'a')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, 64)
+        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.EXPONENT)
+        self.assertEqual(len(tree.children[0].children[0].children[0].children), 2)
+
     def testUminus(self):
         tree = self.parser.parse('int a = -((3 + 3) / 2 * (2+2));')
         self.assertEqual(len(tree.children), 1)
@@ -94,13 +105,13 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].value, -12)
 
     def testPrecedence(self):
-        tree = self.parser.parse('int a = 4/2+2*6/4-1;')
+        tree = self.parser.parse('int a = 4/2^2+2*6/4-1;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
         self.assertEqual(tree.children[0].value, 'a')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].value, 4)
+        self.assertEqual(tree.children[0].children[0].value, 3)
 
     def testIntAssignedFloat(self):
         self.assertRaises(ParserError, self.parser.parse, 'int b = 5 / 4;')
