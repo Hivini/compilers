@@ -53,6 +53,28 @@ class TestParser(unittest.TestCase):
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.STRING)
 
+    def testAssignBooleanTrue(self):
+        tree = self.parser.parse('bool a = true;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'a')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, 'true')
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.BOOL_TRUE)
+
+    def testAssignBooleanFalse(self):
+        tree = self.parser.parse('bool a = false;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'a')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, 'false')
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.BOOL_FALSE)
+
     def testAssignSum(self):
         tree = self.parser.parse('int a = 2 + 3;')
         self.assertEqual(len(tree.children), 1)

@@ -20,6 +20,9 @@ class ASTTypes(Enum):
     FLOAT_DCL = 7
     STRING = 8
     STRING_DCL = 9
+    BOOL_TRUE = 10
+    BOOL_FALSE = 11
+    BOOL_DCL = 12
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
@@ -32,6 +35,7 @@ class VariableTypes(Enum):
     INT = 1
     FLOAT = 2
     STRING = 3
+    BOOL = 4
 
 
 class Variable:
@@ -102,7 +106,6 @@ class Parser:
                 p[3].value = int(p[3].value)
             else:
                 self._addError('Float value cannot be assigned to int.')
-                return
         tmp = TreeNode(ASTTypes.INT_DCL, children=[p[3]], value=p[2])
         self.names[p[2]] = Variable(VariableTypes.INT, p[3].value)
         p[0] = tmp
@@ -119,6 +122,13 @@ class Parser:
         '''
         tmp = TreeNode(ASTTypes.STRING_DCL, children=[p[3]], value=p[2])
         self.names[p[2]] = Variable(VariableTypes.STRING, p[3].value)
+        p[0] = tmp
+
+    def p_statement_declare_boolean(self, p):
+        '''statement : BOOL_DCL NAME assignment
+        '''
+        tmp = TreeNode(ASTTypes.BOOL_DCL, children=[p[3]], value=p[2])
+        self.names[p[2]] = Variable(VariableTypes.BOOL, p[3].value)
         p[0] = tmp
 
     def p_assignment(self, p):
@@ -171,9 +181,16 @@ class Parser:
         '''declaration : FLOATNUM '''
         p[0] = TreeNode(ASTTypes.FLOAT, value=p[1])
 
+    def p_expression_bool_true(self, p):
+        '''declaration : BOOL_TRUE '''
+        p[0] = TreeNode(ASTTypes.BOOL_TRUE, value=p[1])
+
+    def p_expression_bool_false(self, p):
+        '''declaration : BOOL_FALSE '''
+        p[0] = TreeNode(ASTTypes.BOOL_FALSE, value=p[1])
+
     def p_expression_string(self, p):
         '''declaration : STRING '''
-        print('aaa')
         p[0] = TreeNode(ASTTypes.STRING, value=p[1])
 
     def p_expression_name(self, p):
