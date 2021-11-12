@@ -8,6 +8,7 @@ from typing import List
 class ParserError(Exception):
     pass
 
+
 class ASTTypes(Enum):
     PROGRAM = 0
     PRINT = 1
@@ -24,15 +25,17 @@ class ASTTypes(Enum):
     UMINUS = 54
     EXPONENT = 55
 
+
 class VariableTypes(Enum):
     INT = 1
     FLOAT = 2
+
 
 class Variable:
     def __init__(self, type: VariableTypes, value: any) -> None:
         self.type = type
         self.value = value
-    
+
     def __str__(self) -> str:
         return f'| Type: {self.type}, Value: {self.value} |'
 
@@ -48,7 +51,7 @@ class TreeNode:
         else:
             self.children = []
         self.value = value
-    
+
     def __str__(self) -> str:
         return f'{self.type.name}'
 
@@ -58,7 +61,7 @@ class Parser:
         ('left', '+', '-'),
         ('left', '*', '/'),
         ('left', '^'),
-        ('right','UMINUS'),
+        ('right', 'UMINUS'),
     )
     names = {}
 
@@ -72,7 +75,6 @@ class Parser:
     def _addError(self, error):
         self.first_error = error
         raise ParserError('Parser Error!')
-            
 
     def p_program(self, p):
         '''program : expression program
@@ -125,18 +127,23 @@ class Parser:
                     | declaration '^' declaration
         '''
         if p[2] == '+':
-            p[0] = TreeNode(ASTTypes.SUM, value=p[1].value + p[3].value, children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.SUM, value=p[1].value +
+                            p[3].value, children=[p[1], p[3]])
         elif p[2] == '-':
-            p[0] = TreeNode(ASTTypes.SUBSTRACT, value=p[1].value - p[3].value, children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.SUBSTRACT, value=p[1].value -
+                            p[3].value, children=[p[1], p[3]])
         elif p[2] == '*':
-            p[0] = TreeNode(ASTTypes.MULTIPLICATION, value=p[1].value * p[3].value, children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.MULTIPLICATION,
+                            value=p[1].value * p[3].value, children=[p[1], p[3]])
         elif p[2] == '/':
             if p[3].value == 0:
                 print('Division times 0 :(')
             else:
-                p[0] = TreeNode(ASTTypes.DIVISION, value=p[1].value / p[3].value, children=[p[1], p[3]])
+                p[0] = TreeNode(ASTTypes.DIVISION, value=p[1].value /
+                                p[3].value, children=[p[1], p[3]])
         elif p[2] == '^':
-            p[0] = TreeNode(ASTTypes.EXPONENT, value=pow(p[1].value, p[3].value), children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.EXPONENT, value=pow(
+                p[1].value, p[3].value), children=[p[1], p[3]])
 
     def p_expression_group(self, p):
         '''declaration : '(' declaration ')' '''
@@ -160,7 +167,7 @@ class Parser:
             p[0] = TreeNode(ASTTypes.VARIABLE, value=self.names[p[1]].value)
         else:
             self._addError(f'Variable {p[1]} does not exist.')
-            
+
     def p_error(self, p):
         self._addError('Syntax error!')
 

@@ -28,7 +28,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, 2)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.INT)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.INT)
 
     def testAssignFloat(self):
         tree = self.parser.parse('float a = 2.2;')
@@ -38,7 +39,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, 2.2)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.FLOAT)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.FLOAT)
 
     def testAssignSum(self):
         tree = self.parser.parse('int a = 2 + 3;')
@@ -48,8 +50,10 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, 5)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.SUM)
-        self.assertEqual(len(tree.children[0].children[0].children[0].children), 2)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.SUM)
+        self.assertEqual(
+            len(tree.children[0].children[0].children[0].children), 2)
 
     def testAssignSubstract(self):
         tree = self.parser.parse('int a = 2 - 3;')
@@ -59,8 +63,10 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, -1)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.SUBSTRACT)
-        self.assertEqual(len(tree.children[0].children[0].children[0].children), 2)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.SUBSTRACT)
+        self.assertEqual(
+            len(tree.children[0].children[0].children[0].children), 2)
 
     def testAssignMultiplication(self):
         tree = self.parser.parse('int a = 2 * 3;')
@@ -70,8 +76,10 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, 6)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.MULTIPLICATION)
-        self.assertEqual(len(tree.children[0].children[0].children[0].children), 2)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.MULTIPLICATION)
+        self.assertEqual(
+            len(tree.children[0].children[0].children[0].children), 2)
 
     def testAssignDivision(self):
         tree = self.parser.parse('int a = 4/2;')
@@ -81,8 +89,10 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, 2)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.DIVISION)
-        self.assertEqual(len(tree.children[0].children[0].children[0].children), 2)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.DIVISION)
+        self.assertEqual(
+            len(tree.children[0].children[0].children[0].children), 2)
 
     def testAssignExponent(self):
         tree = self.parser.parse('int a = 2^6;')
@@ -92,8 +102,10 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, 64)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.EXPONENT)
-        self.assertEqual(len(tree.children[0].children[0].children[0].children), 2)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.EXPONENT)
+        self.assertEqual(
+            len(tree.children[0].children[0].children[0].children), 2)
 
     def testUminus(self):
         tree = self.parser.parse('int a = -((3 + 3) / 2 * (2+2));')

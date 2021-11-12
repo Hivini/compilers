@@ -30,7 +30,8 @@ class LexerTypes(Enum):
 
 class Lexer:
     # List of literals to avoid writing simple regexp for each one.
-    literals = ['+', '-', '*', '/', '=', '^', '>', '<', '(', ')', '{', '}', '"']
+    literals = ['+', '-', '*', '/', '=', '^',
+                '>', '<', '(', ')', '{', '}', '"']
     # Reserved keywords
     reserved = {
         'int': LexerTypes.INTDCL.name,
