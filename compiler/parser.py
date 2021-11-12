@@ -18,6 +18,7 @@ class ASTTypes(Enum):
     SUBSTRACT = 51
     MULTIPLICATION = 52
     DIVISION = 53
+    UMINUS = 54
 
 class VariableTypes(Enum):
     INT = 1
@@ -52,6 +53,7 @@ class Parser:
     precedence = (
         ('left', '+', '-'),
         ('left', '*', '/'),
+        ('right','UMINUS'),
     )
     names = {}
 
@@ -96,7 +98,7 @@ class Parser:
         self.names[p[2]] = Variable(VariableTypes.INT, p[3].value)
         p[0] = tmp
 
-    def p_statement_declare_FLOAT(self, p):
+    def p_statement_declare_float(self, p):
         '''statement : FLOATDCL NAME assignment
         '''
         tmp = TreeNode(ASTTypes.FLOAT_DCL, children=[p[3]], value=p[2])
@@ -132,6 +134,10 @@ class Parser:
     def p_expression_group(self, p):
         '''declaration : '(' declaration ')' '''
         p[0] = p[2]
+
+    def p_expression_uminus(self, t):
+        '''declaration : - declaration %prec UMINUS'''
+        t[0] = TreeNode(ASTTypes.UMINUS, value=-t[2].value, children=[t[2]])
 
     def p_expression_intnum(self, p):
         '''declaration : INTNUM '''
