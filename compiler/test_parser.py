@@ -10,12 +10,15 @@ class TestParser(unittest.TestCase):
         self.parser = self.instance.createParser()
 
     def testPrintExp(self):
-        tree = self.parser.parse('print(a);')
-        self.assertEqual(len(tree.children), 1)
-        self.assertEqual(tree.children[0].type, ASTTypes.PRINT)
-        self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.VARIABLE)
-        self.assertEqual(tree.children[0].children[0].value, 'a')
+        code = '''int a = 2;
+        print(a);
+        '''
+        tree = self.parser.parse(code)
+        self.assertEqual(len(tree.children), 2)
+        self.assertEqual(tree.children[1].type, ASTTypes.PRINT)
+        self.assertEqual(len(tree.children[1].children), 1)
+        self.assertEqual(tree.children[1].children[0].type, ASTTypes.VARIABLE)
+        self.assertEqual(tree.children[1].children[0].value, 2)
         self.assertEqual(self.instance.total_errors, 0)
 
     def testAssignInt(self):
@@ -103,6 +106,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(self.instance.total_errors, 1)
 
     def testNoEndSentence(self):
-        tree = self.parser.parse('print(a)')
+        code = '''int a = 2;
+        print(a)'''
+        tree = self.parser.parse(code)
         self.assertEqual(tree, None)
         self.assertEqual(self.instance.total_errors, 1)

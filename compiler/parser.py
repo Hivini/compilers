@@ -61,6 +61,12 @@ class Parser:
         self.tokens = self.lexerInstance.tokens
         self.start = 'program'
         self.total_errors = 0
+        self.first_error = ''
+
+    def _addError(self, error):
+        if (self.total_errors == 0):
+            self.first_error = error
+        self.total_errors += 1
 
     def p_program(self, p):
         '''program : expression program
@@ -84,7 +90,7 @@ class Parser:
             if p[3].value.is_integer():
                 p[3].value = int(p[3].value)
             else:
-                self.total_errors += 1
+                self._addError('Float value cannot be assigned to int.')
                 return
         tmp = TreeNode(ASTTypes.INT_DCL, children=[p[3]], value=p[2])
         self.names[p[2]] = Variable(VariableTypes.INT, p[3].value)
@@ -137,11 +143,13 @@ class Parser:
 
     def p_expression_name(self, p):
         '''declaration : NAME '''
-        # TODO(hivini): Check if name exists.
-        p[0] = TreeNode(ASTTypes.VARIABLE, value=p[1])
-
+        if (p[1] in self.names):
+            p[0] = TreeNode(ASTTypes.VARIABLE, value=self.names[p[1]].value)
+        else:
+            self._addError(f'Variable {p[1]} does not exist.')
+            
     def p_error(self, p):
-        self.total_errors += 1
+        self._addError('Syntax error!')
 
     def createParser(self):
         parser = yacc.yacc(module=self)

@@ -61,7 +61,7 @@ def Run():
     if (args.verbose):
         PrintAST(logger, root, 0)
     if parserInstance.total_errors > 0:
-        logger.LogError("Problem!")
+        logger.LogError(parserInstance.first_error)
     else:
         logger.LogDebug(parserInstance.names)
         logger.LogSuccess('Successfully compiled!')
