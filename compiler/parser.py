@@ -5,6 +5,9 @@ from enum import Enum
 from typing import List
 
 
+class ParserError(Exception):
+    pass
+
 class ASTTypes(Enum):
     PROGRAM = 0
     PRINT = 1
@@ -62,13 +65,12 @@ class Parser:
         self.lexer = self.lexerInstance.createLexer()
         self.tokens = self.lexerInstance.tokens
         self.start = 'program'
-        self.total_errors = 0
         self.first_error = ''
 
     def _addError(self, error):
-        if (self.total_errors == 0):
-            self.first_error = error
-        self.total_errors += 1
+        self.first_error = error
+        raise ParserError('Parser Error!')
+            
 
     def p_program(self, p):
         '''program : expression program

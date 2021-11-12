@@ -4,7 +4,7 @@ import os
 from compiler.lexer import Lexer
 
 from compiler.logger import Logger
-from compiler.parser import Parser
+from compiler.parser import Parser, ParserError
 
 
 def PrintAST(logger, current, depth):
@@ -57,14 +57,14 @@ def Run():
 
     parserInstance = Parser()
     parser = parserInstance.createParser()
-    root = parser.parse(program)
-    if (args.verbose):
-        PrintAST(logger, root, 0)
-    if parserInstance.total_errors > 0:
-        logger.LogError(parserInstance.first_error)
-    else:
+    try:
+        root = parser.parse(program)
+        if (args.verbose):
+            PrintAST(logger, root, 0)
         logger.LogDebug(parserInstance.names)
         logger.LogSuccess('Successfully compiled!')
+    except ParserError:
+        logger.LogError(parserInstance.first_error)
 
 
 if __name__ == '__main__':
