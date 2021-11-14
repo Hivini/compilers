@@ -23,6 +23,7 @@ class ASTTypes(Enum):
     BOOL_TRUE = 10
     BOOL_FALSE = 11
     BOOL_DCL = 12
+    CMP = 13
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
@@ -107,28 +108,28 @@ class Parser:
             else:
                 self._addError('Float value cannot be assigned to int.')
         tmp = TreeNode(ASTTypes.INT_DCL, children=[p[3]], value=p[2])
-        self.names[p[2]] = Variable(VariableTypes.INT, p[3].value)
+        self._addToNames(p[2], VariableTypes.INT, p[3].value)
         p[0] = tmp
 
     def p_statement_declare_float(self, p):
         '''statement : FLOATDCL NAME assignment
         '''
         tmp = TreeNode(ASTTypes.FLOAT_DCL, children=[p[3]], value=p[2])
-        self.names[p[2]] = Variable(VariableTypes.FLOAT, p[3].value)
+        self._addToNames(p[2], VariableTypes.FLOAT, p[3].value)
         p[0] = tmp
 
     def p_statement_declare_string(self, p):
         '''statement : STRING_DCL NAME assignment
         '''
         tmp = TreeNode(ASTTypes.STRING_DCL, children=[p[3]], value=p[2])
-        self.names[p[2]] = Variable(VariableTypes.STRING, p[3].value)
+        self._addToNames(p[2], VariableTypes.STRING, p[3].value)
         p[0] = tmp
 
     def p_statement_declare_boolean(self, p):
         '''statement : BOOL_DCL NAME assignment
         '''
         tmp = TreeNode(ASTTypes.BOOL_DCL, children=[p[3]], value=p[2])
-        self.names[p[2]] = Variable(VariableTypes.BOOL, p[3].value)
+        self._addToNames(p[2], VariableTypes.BOOL, p[3].value)
         p[0] = tmp
 
     def p_assignment(self, p):
@@ -183,11 +184,11 @@ class Parser:
 
     def p_expression_bool_true(self, p):
         '''declaration : BOOL_TRUE '''
-        p[0] = TreeNode(ASTTypes.BOOL_TRUE, value=p[1])
+        p[0] = TreeNode(ASTTypes.BOOL_TRUE, value=True)
 
     def p_expression_bool_false(self, p):
         '''declaration : BOOL_FALSE '''
-        p[0] = TreeNode(ASTTypes.BOOL_FALSE, value=p[1])
+        p[0] = TreeNode(ASTTypes.BOOL_FALSE, value=False)
 
     def p_expression_string(self, p):
         '''declaration : STRING '''
@@ -202,6 +203,11 @@ class Parser:
 
     def p_error(self, p):
         self._addError('Syntax error!')
+
+    def _addToNames(self, name: str, type: VariableTypes, value: any):
+        if name in self.names:
+            self._addError(f'Variable name "{name}" already exists.')
+        self.names[name] = Variable(type, value)
 
     def createParser(self):
         parser = yacc.yacc(module=self)

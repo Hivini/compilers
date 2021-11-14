@@ -10,7 +10,7 @@ from compiler.parser import Parser, ParserError
 def PrintAST(logger, current, depth):
     spaces = '\t'*depth
     logger.LogDebug(f'{spaces}-{current.type.name}')
-    if current.value:
+    if current.value != None:
         logger.LogDebug(f'{spaces}| {current.value}')
     for c in current.children:
         PrintAST(logger, c, depth+1)
