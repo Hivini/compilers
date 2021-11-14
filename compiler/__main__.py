@@ -1,24 +1,33 @@
 import argparse
 import sys
 import os
+from compiler.lexer import Lexer
 
 from compiler.logger import Logger
-from compiler.lexer import Lexer
+from compiler.parser import Parser, ParserError
+
+
+def PrintAST(logger, current, depth):
+    spaces = '\t'*depth
+    logger.LogDebug(f'{spaces}-{current.type.name}')
+    if current.value != None:
+        logger.LogDebug(f'{spaces}| {current.value}')
+    for c in current.children:
+        PrintAST(logger, c, depth+1)
 
 
 def Run():
-    # Create logger
-    logger = Logger()
-
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "file_path", help="Location of the file to compile, relative to current location.")
+    parser.add_argument(
+        "-v", "--verbose", help="Add output prints to show debug elements.", action="store_true")
     args = parser.parse_args()
     file_path = args.file_path
 
-    lexerInstance = Lexer()
-    lexer = lexerInstance.createLexer()
+    # Create logger
+    logger = Logger(args.verbose)
 
     # Open file
     if not os.path.isfile(file_path):
@@ -33,17 +42,29 @@ def Run():
         logger.LogError(f'{file_path} could not be opened!')
         sys.exit(1)
 
+    lexerInstance = Lexer()
+    lexer = lexerInstance.createLexer()
     lexer.input(program)
     while True:
         tok = lexer.token()
-        if not tok:
-            break
         if lexerInstance.n_errors != 0:
             errorMessage = f'Invalid token \'{lexerInstance.errorToken}\' at line {lexerInstance.errorLine}'
             errorLine = lines[lexerInstance.errorLine]
             logger.LogError(f'{errorMessage}:\n\t{errorLine}')
             sys.exit(1)
-    logger.LogSuccess('Successfully compiled!')
+        if not tok:
+            break
+
+    parserInstance = Parser()
+    parser = parserInstance.createParser()
+    try:
+        root = parser.parse(program)
+        if (args.verbose):
+            PrintAST(logger, root, 0)
+        logger.LogDebug(parserInstance.names)
+        logger.LogSuccess('Successfully compiled!')
+    except ParserError:
+        logger.LogError(parserInstance.first_error)
 
 
 if __name__ == '__main__':

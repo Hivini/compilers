@@ -25,12 +25,14 @@ class LexerTypes(Enum):
     ELIF = 19
     ELSE = 20
     STRING_DCL = 21
-    SENTENCE_END = 22
+    STRING = 22
+    SENTENCE_END = 23
 
 
 class Lexer:
     # List of literals to avoid writing simple regexp for each one.
-    literals = ['+', '-', '*', '/', '=', '^', '>', '<', '(', ')', '{', '}', '"']
+    literals = ['+', '-', '*', '/', '=', '^',
+                '>', '<', '(', ')', '{', '}', '"']
     # Reserved keywords
     reserved = {
         'int': LexerTypes.INTDCL.name,
@@ -58,6 +60,7 @@ class Lexer:
         LexerTypes.GREATER_EQUAL.name,
         LexerTypes.LESS_EQUAL.name,
         LexerTypes.SENTENCE_END.name,
+        LexerTypes.STRING.name,
     ] + list(reserved.values())
 
     t_EQUALS = r'=='
@@ -72,6 +75,11 @@ class Lexer:
         self.n_errors = 0
         self.errorToken = ''
         self.errorLine = -1
+
+    def t_STRING(self, t):
+        r'"([^"\n]|(\\"))*"'
+        t.type = LexerTypes.STRING.name
+        return t
 
     def t_NAME(self, t):
         r'[a-zA-Z_][a-zA-Z_0-9]*'

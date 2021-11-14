@@ -6,8 +6,8 @@ from compiler.lexer import Lexer, LexerTypes
 class TestLexer(unittest.TestCase):
 
     def setUp(self):
-        instance = Lexer()
-        self.lexer = instance.createLexer()
+        self.instance = Lexer()
+        self.lexer = self.instance.createLexer()
 
     def _getTokens(self, input: str):
         self.lexer.input(input)
@@ -22,6 +22,7 @@ class TestLexer(unittest.TestCase):
     def _testSingleToken(self, input: str, typeValue: str):
         token = self._getTokens(input)[0]
         self.assertEqual(token.type, typeValue)
+        self.assertEqual(self.instance.n_errors, 0)
 
     def testEqual(self):
         self._testSingleToken('=', '=')
@@ -40,10 +41,10 @@ class TestLexer(unittest.TestCase):
 
     def testExponent(self):
         self._testSingleToken('^', '^')
-    
+
     def testGreaterThan(self):
         self._testSingleToken('>', '>')
-    
+
     def testLessThan(self):
         self._testSingleToken('<', '<')
 
@@ -58,7 +59,7 @@ class TestLexer(unittest.TestCase):
 
     def testRightBracket(self):
         self._testSingleToken('}', '}')
-    
+
     def testSentenceEnd(self):
         self._testSingleToken(';', LexerTypes.SENTENCE_END.name)
 
@@ -73,7 +74,7 @@ class TestLexer(unittest.TestCase):
 
     def testComparisonLessEqual(self):
         self._testSingleToken('<=', LexerTypes.LESS_EQUAL.name)
-    
+
     def testAndOperator(self):
         self._testSingleToken('and', LexerTypes.AND_OP.name)
 
@@ -88,7 +89,7 @@ class TestLexer(unittest.TestCase):
 
     def testFloatDlc(self):
         self._testSingleToken('float', LexerTypes.FLOATDCL.name)
-    
+
     def testStringDcl(self):
         self._testSingleToken('string', LexerTypes.STRING_DCL.name)
 
@@ -97,19 +98,19 @@ class TestLexer(unittest.TestCase):
 
     def testPrint(self):
         self._testSingleToken('print', LexerTypes.PRINT.name)
-    
+
     def testFor(self):
         self._testSingleToken('for', LexerTypes.FOR.name)
 
     def testWhile(self):
         self._testSingleToken('while', LexerTypes.WHILE.name)
-    
+
     def testIf(self):
         self._testSingleToken('if', LexerTypes.IF.name)
 
     def testElif(self):
         self._testSingleToken('elif', LexerTypes.ELIF.name)
-    
+
     def testElse(self):
         self._testSingleToken('else', LexerTypes.ELSE.name)
 
@@ -118,7 +119,7 @@ class TestLexer(unittest.TestCase):
 
     def testFloatNumber(self):
         self._testSingleToken('1.2', LexerTypes.FLOATNUM.name)
-    
+
     def testTrue(self):
         self._testSingleToken('true', LexerTypes.BOOL_TRUE.name)
 
