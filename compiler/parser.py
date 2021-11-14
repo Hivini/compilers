@@ -109,11 +109,8 @@ class Parser:
     def p_statement_declare_int(self, p):
         '''statement : INTDCL NAME assignment
         '''
-        if type(p[3].value) == float:
-            if p[3].value.is_integer():
-                p[3].value = int(p[3].value)
-            else:
-                self._addError('Float value cannot be assigned to int.')
+        if not isinstance(p[3].value, int):
+            self._addError(f'"{p[3].value}" value cannot be assigned to int.')
         tmp = TreeNode(ASTTypes.INT_DCL, children=[p[3]], value=p[2])
         self._addToNames(p[2], VariableTypes.INT, p[3].value)
         p[0] = tmp
@@ -121,6 +118,11 @@ class Parser:
     def p_statement_declare_float(self, p):
         '''statement : FLOATDCL NAME assignment
         '''
+        if isinstance(p[3].value, int):
+            p[3].value = float(p[3].value)
+        elif not isinstance(p[3].value, float):
+            self._addError(
+                f'"{p[3].value}" value cannot be assigned to float.')
         tmp = TreeNode(ASTTypes.FLOAT_DCL, children=[p[3]], value=p[2])
         self._addToNames(p[2], VariableTypes.FLOAT, p[3].value)
         p[0] = tmp
@@ -128,6 +130,8 @@ class Parser:
     def p_statement_declare_string(self, p):
         '''statement : STRING_DCL NAME assignment
         '''
+        if not isinstance(p[3].value, str):
+            self._addError(f'"{p[3].value}" value cannot be assigned to string.')
         tmp = TreeNode(ASTTypes.STRING_DCL, children=[p[3]], value=p[2])
         self._addToNames(p[2], VariableTypes.STRING, p[3].value)
         p[0] = tmp
@@ -135,6 +139,8 @@ class Parser:
     def p_statement_declare_boolean(self, p):
         '''statement : BOOL_DCL NAME assignment
         '''
+        if not isinstance(p[3].value, bool):
+            self._addError(f'"{p[3].value}" value cannot be assigned to boolean.')
         tmp = TreeNode(ASTTypes.BOOL_DCL, children=[p[3]], value=p[2])
         self._addToNames(p[2], VariableTypes.BOOL, p[3].value)
         p[0] = tmp
@@ -154,24 +160,31 @@ class Parser:
                     | declaration '/' declaration
                     | declaration '^' declaration
         '''
+        leftV = p[1].value
+        rightV = p[3].value
+        op = p[2]
+        self._checkArithmeticOperation(leftV, rightV, op)
         if p[2] == '+':
-            p[0] = TreeNode(ASTTypes.SUM, value=p[1].value +
-                            p[3].value, children=[p[1], p[3]])
+            if self._checkTypeOfBothVariables(leftV, rightV, str):
+                p[0] = TreeNode(ASTTypes.SUM, value=str(
+                    leftV) + str(rightV), children=[p[1], p[3]])
+            else:
+                p[0] = TreeNode(ASTTypes.SUM, value=leftV +
+                                rightV, children=[p[1], p[3]])
         elif p[2] == '-':
-            p[0] = TreeNode(ASTTypes.SUBSTRACT, value=p[1].value -
-                            p[3].value, children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.SUBSTRACT, value=leftV -
+                                rightV, children=[p[1], p[3]])
         elif p[2] == '*':
             p[0] = TreeNode(ASTTypes.MULTIPLICATION,
-                            value=p[1].value * p[3].value, children=[p[1], p[3]])
+                            value=leftV * rightV, children=[p[1], p[3]])
         elif p[2] == '/':
-            if p[3].value == 0:
-                self._addError('Division by Zero :(')
-            else:
-                p[0] = TreeNode(ASTTypes.DIVISION, value=p[1].value /
-                                p[3].value, children=[p[1], p[3]])
+            val = leftV / rightV
+            if val.is_integer():
+                val = int(val)
+            p[0] = TreeNode(ASTTypes.DIVISION, value=val, children=[p[1], p[3]])
         elif p[2] == '^':
             p[0] = TreeNode(ASTTypes.EXPONENT, value=pow(
-                p[1].value, p[3].value), children=[p[1], p[3]])
+                leftV, rightV), children=[p[1], p[3]])
 
     def p_expression_cmpop(self, p):
         '''declaration : declaration EQUALS declaration
@@ -237,7 +250,7 @@ class Parser:
 
     def p_expression_string(self, p):
         '''declaration : STRING '''
-        p[0] = TreeNode(ASTTypes.STRING, value=p[1])
+        p[0] = TreeNode(ASTTypes.STRING, value=p[1].replace('"', ''))
 
     def p_expression_name(self, p):
         '''declaration : NAME '''
@@ -248,6 +261,35 @@ class Parser:
 
     def p_error(self, p):
         self._addError('Syntax error!')
+
+    def _checkArithmeticOperation(self, leftValue, rightValue, operation: str) -> TreeNode:
+        numTypes = [int, float]
+        bothAreNums = type(leftValue) in numTypes and type(rightValue) in numTypes
+        if operation == '+':
+            if self._checkTypeOfBothVariables(leftValue, rightValue, bool):
+                self._addError(
+                    f'Cannot sum values "{leftValue}" and "{rightValue}"')
+        elif operation == '-':
+            if not(bothAreNums):
+                self._addError(
+                    f'Cannot substract values "{leftValue}" and "{rightValue}".')
+        elif operation == '*':
+            if not(bothAreNums):
+                self._addError(
+                    f'Cannot multiply values "{leftValue}" and "{rightValue}".')
+        elif operation == '/':
+            if not(bothAreNums):
+                self._addError(
+                    f'Cannot divide values "{leftValue}" and "{rightValue}".')
+            elif rightValue == 0:
+                self._addError(f'{leftValue} / {rightValue} is invalid. Cannot perform division by zero.')
+        elif operation == '^':
+            if not(bothAreNums):
+                self._addError(
+                    f'Cannot get the exponent of "{leftValue}" ^ "{rightValue}".')
+
+    def _checkTypeOfBothVariables(self, left, right, t):
+        return type(left) == t or type(right) == t
 
     def _addToNames(self, name: str, type: VariableTypes, value: any):
         if name in self.names:

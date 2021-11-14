@@ -41,6 +41,17 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].value, 2.2)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.FLOAT)
+    
+    def testAssignFloatWithInt(self):
+        tree = self.parser.parse('float floatasInt = 4;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.FLOAT_DCL)
+        self.assertEqual(tree.children[0].value, 'floatasInt')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, 4)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.INT)
 
     def testAssignString(self):
         tree = self.parser.parse('string assignString = "hola";')
@@ -49,7 +60,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].value, 'assignString')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].value, '"hola"')
+        self.assertEqual(tree.children[0].children[0].value, 'hola')
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.STRING)
 
@@ -230,11 +241,68 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, 3)
 
+    def testConcatenationStrs(self):
+        tree = self.parser.parse('string concstr = "hola" + "mundo";')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.STRING_DCL)
+        self.assertEqual(tree.children[0].value, 'concstr')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, "holamundo")
+
+    def testConcatenationNums(self):
+        tree = self.parser.parse('string concnums = "hola" + 1 + "" + 23;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.STRING_DCL)
+        self.assertEqual(tree.children[0].value, 'concnums')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, "hola123")
+
     def testIntAssignedFloat(self):
         self.assertRaises(ParserError, self.parser.parse, 'int invfloatint = 5 / 4;')
 
+    def testIntWrongType(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongInt = "hola";')
+
+    def testFloatWrongType(self):
+        self.assertRaises(ParserError, self.parser.parse, 'float wrongFloat = "hola";')
+
+    def testStringWrongType(self):
+        self.assertRaises(ParserError, self.parser.parse, 'string wrongString = 2;')
+
+    def testBooleanWrongType(self):
+        self.assertRaises(ParserError, self.parser.parse, 'bool wrongbool = 2;')
+    
+    def testWrongSum(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongsumbool = 3 + true;')
+
+    def testWrongSubstractStr(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongminustr = 3 - "hola";')
+
+    def testWrongSubstractStr(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongminusbool = 3 - true;')
+
+    def testWrongMultiplyStr(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongstrmult = 3 * "hola";')
+
+    def testWrongMultiplyBool(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongboolmult = 3 * true;')
+
+    def testWrongDivisionStr(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongstrdiv = 3 / "hola";')
+
+    def testWrongDivisionBool(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongbooldiv = 3 / true;')
+
     def testDivisionByZero(self):
         self.assertRaises(ParserError, self.parser.parse, 'float divZero = 30 / (2*3 - 6);')
+
+    def testWrongExpStr(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongstrexp = 3^"hola";')
+
+    def testWrongExpBool(self):
+        self.assertRaises(ParserError, self.parser.parse, 'int wrongboolexp = 3^true;')
 
     def testExistingVariableDeclaration(self):
         code = '''int existing = 1;
