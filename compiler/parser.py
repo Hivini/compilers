@@ -131,7 +131,8 @@ class Parser:
         '''statement : STRING_DCL NAME assignment
         '''
         if not isinstance(p[3].value, str):
-            self._addError(f'"{p[3].value}" value cannot be assigned to string.')
+            self._addError(
+                f'"{p[3].value}" value cannot be assigned to string.')
         tmp = TreeNode(ASTTypes.STRING_DCL, children=[p[3]], value=p[2])
         self._addToNames(p[2], VariableTypes.STRING, p[3].value)
         p[0] = tmp
@@ -140,7 +141,8 @@ class Parser:
         '''statement : BOOL_DCL NAME assignment
         '''
         if not isinstance(p[3].value, bool):
-            self._addError(f'"{p[3].value}" value cannot be assigned to boolean.')
+            self._addError(
+                f'"{p[3].value}" value cannot be assigned to boolean.')
         tmp = TreeNode(ASTTypes.BOOL_DCL, children=[p[3]], value=p[2])
         self._addToNames(p[2], VariableTypes.BOOL, p[3].value)
         p[0] = tmp
@@ -165,7 +167,7 @@ class Parser:
         op = p[2]
         self._checkArithmeticOperation(leftV, rightV, op)
         if p[2] == '+':
-            if self._checkTypeOfBothVariables(leftV, rightV, str):
+            if type(leftV) == str or type(rightV) == str:
                 p[0] = TreeNode(ASTTypes.SUM, value=str(
                     leftV) + str(rightV), children=[p[1], p[3]])
             else:
@@ -173,7 +175,7 @@ class Parser:
                                 rightV, children=[p[1], p[3]])
         elif p[2] == '-':
             p[0] = TreeNode(ASTTypes.SUBSTRACT, value=leftV -
-                                rightV, children=[p[1], p[3]])
+                            rightV, children=[p[1], p[3]])
         elif p[2] == '*':
             p[0] = TreeNode(ASTTypes.MULTIPLICATION,
                             value=leftV * rightV, children=[p[1], p[3]])
@@ -181,7 +183,8 @@ class Parser:
             val = leftV / rightV
             if val.is_integer():
                 val = int(val)
-            p[0] = TreeNode(ASTTypes.DIVISION, value=val, children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.DIVISION, value=val,
+                            children=[p[1], p[3]])
         elif p[2] == '^':
             p[0] = TreeNode(ASTTypes.EXPONENT, value=pow(
                 leftV, rightV), children=[p[1], p[3]])
@@ -194,29 +197,34 @@ class Parser:
                     | declaration '>' declaration
                     | declaration '<' declaration
         '''
-        if p[2] == '==':
-            p[0] = TreeNode(ASTTypes.CMP_EQUAL, value=p[1].value ==
-                            p[3].value, children=[p[1], p[3]])
-        elif p[2] == '!=':
-            p[0] = TreeNode(ASTTypes.CMP_NOT_EQUAL, value=p[1].value !=
-                            p[3].value, children=[p[1], p[3]])
-        elif p[2] == '>=':
-            p[0] = TreeNode(ASTTypes.CMP_GREATER_EQUAL, value=p[1].value >=
-                            p[3].value, children=[p[1], p[3]])
+        leftV = p[1].value
+        rightV = p[3].value
+        op = p[2]
+        self._checkComparisonOperation(leftV, rightV, op)
+        if op == '==':
+            p[0] = TreeNode(ASTTypes.CMP_EQUAL, value=leftV ==
+                            rightV, children=[p[1], p[3]])
+        elif op == '!=':
+            p[0] = TreeNode(ASTTypes.CMP_NOT_EQUAL, value=leftV !=
+                            rightV, children=[p[1], p[3]])
+        elif op == '>=':
+            p[0] = TreeNode(ASTTypes.CMP_GREATER_EQUAL, value=leftV >=
+                            rightV, children=[p[1], p[3]])
         elif p[2] == '<=':
-            p[0] = TreeNode(ASTTypes.CMP_LESS_EQUAL, value=p[1].value <=
-                            p[3].value, children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.CMP_LESS_EQUAL, value=leftV <=
+                            rightV, children=[p[1], p[3]])
         elif p[2] == '>':
-            p[0] = TreeNode(ASTTypes.CMP_GREATER, value=p[1].value >
-                            p[3].value, children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.CMP_GREATER, value=leftV >
+                            rightV, children=[p[1], p[3]])
         elif p[2] == '<':
-            p[0] = TreeNode(ASTTypes.CMP_LESS, value=p[1].value <
-                            p[3].value, children=[p[1], p[3]])
+            p[0] = TreeNode(ASTTypes.CMP_LESS, value=leftV <
+                            rightV, children=[p[1], p[3]])
 
     def p_expression_boolop(self, p):
         '''declaration : declaration AND_OP declaration
                     | declaration OR_OP declaration
         '''
+        self._checkBoolOperator(p[1].value, p[3].value, p[2])
         if p[2] == 'and':
             p[0] = TreeNode(ASTTypes.AND_OP, value=p[1].value and
                             p[3].value, children=[p[1], p[3]])
@@ -262,11 +270,12 @@ class Parser:
     def p_error(self, p):
         self._addError('Syntax error!')
 
-    def _checkArithmeticOperation(self, leftValue, rightValue, operation: str) -> TreeNode:
+    def _checkArithmeticOperation(self, leftValue, rightValue, operation: str):
         numTypes = [int, float]
-        bothAreNums = type(leftValue) in numTypes and type(rightValue) in numTypes
+        bothAreNums = type(leftValue) in numTypes and type(
+            rightValue) in numTypes
         if operation == '+':
-            if self._checkTypeOfBothVariables(leftValue, rightValue, bool):
+            if type(leftValue) == bool or type(rightValue) == bool:
                 self._addError(
                     f'Cannot sum values "{leftValue}" and "{rightValue}"')
         elif operation == '-':
@@ -282,14 +291,53 @@ class Parser:
                 self._addError(
                     f'Cannot divide values "{leftValue}" and "{rightValue}".')
             elif rightValue == 0:
-                self._addError(f'{leftValue} / {rightValue} is invalid. Cannot perform division by zero.')
+                self._addError(
+                    f'{leftValue} / {rightValue} is invalid. Cannot perform division by zero.')
         elif operation == '^':
             if not(bothAreNums):
                 self._addError(
                     f'Cannot get the exponent of "{leftValue}" ^ "{rightValue}".')
 
-    def _checkTypeOfBothVariables(self, left, right, t):
-        return type(left) == t or type(right) == t
+    def _checkComparisonOperation(self, leftValue, rightValue, operation: str):
+        numTypes = [int, float]
+        tl = type(leftValue)
+        tr = type(rightValue)
+        areNumAndStrings = (tl in numTypes and tr == str) or (
+            tr in numTypes and tl == str)
+        areBoolsOrStrs = tl == bool or tr == bool or tl == str or tr == str
+        if operation == '==':
+            if areNumAndStrings:
+                self._addError(
+                    f'Cannot do "{leftValue}" == "{rightValue}". Mismatching types.')
+        elif operation == '!=':
+            if areNumAndStrings:
+                self._addError(
+                    f'Cannot do "{leftValue}" != "{rightValue}". Mismatching types.')
+        elif operation == '>=':
+            if areBoolsOrStrs:
+                self._addError(
+                    f'Cannot do "{leftValue}" >= "{rightValue}". Mismatching types.')
+        elif operation == '<=':
+            if areBoolsOrStrs:
+                self._addError(
+                    f'Cannot do "{leftValue}" <= "{rightValue}". Mismatching types.')
+        elif operation == '>':
+            if areBoolsOrStrs:
+                self._addError(
+                    f'Cannot do "{leftValue}" > "{rightValue}". Mismatching types.')
+        elif operation == '<':
+            if areBoolsOrStrs:
+                self._addError(
+                    f'Cannot do "{leftValue}" < "{rightValue}". Mismatching types.')
+
+    def _checkBoolOperator(self, leftValue, rightValue, operation: str):
+        tl = type(leftValue)
+        tr = type(rightValue)
+        # TODO(hivini): Ask professor about 'and' and 'or' operations between
+        # booleans and nums.
+        if not (tl == bool and tr == bool):
+            self._addError(
+                f'Cannot perform boolean operation on "{leftValue}" and "{rightValue}".')
 
     def _addToNames(self, name: str, type: VariableTypes, value: any):
         if name in self.names:

@@ -41,7 +41,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].value, 2.2)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.FLOAT)
-    
+
     def testAssignFloatWithInt(self):
         tree = self.parser.parse('float floatasInt = 4;')
         self.assertEqual(len(tree.children), 1)
@@ -204,7 +204,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, True)
-    
+
     def testCmpLess(self):
         tree = self.parser.parse('bool cmpless = 1 < 2;')
         self.assertEqual(len(tree.children), 1)
@@ -260,49 +260,112 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].value, "hola123")
 
     def testIntAssignedFloat(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int invfloatint = 5 / 4;')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int invfloatint = 5 / 4;')
 
     def testIntWrongType(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongInt = "hola";')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongInt = "hola";')
 
     def testFloatWrongType(self):
-        self.assertRaises(ParserError, self.parser.parse, 'float wrongFloat = "hola";')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'float wrongFloat = "hola";')
 
     def testStringWrongType(self):
-        self.assertRaises(ParserError, self.parser.parse, 'string wrongString = 2;')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'string wrongString = 2;')
 
     def testBooleanWrongType(self):
-        self.assertRaises(ParserError, self.parser.parse, 'bool wrongbool = 2;')
-    
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool wrongbool = 2;')
+
     def testWrongSum(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongsumbool = 3 + true;')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongsumbool = 3 + true;')
 
     def testWrongSubstractStr(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongminustr = 3 - "hola";')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongminustr = 3 - "hola";')
 
     def testWrongSubstractStr(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongminusbool = 3 - true;')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongminusbool = 3 - true;')
 
     def testWrongMultiplyStr(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongstrmult = 3 * "hola";')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongstrmult = 3 * "hola";')
 
     def testWrongMultiplyBool(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongboolmult = 3 * true;')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongboolmult = 3 * true;')
 
     def testWrongDivisionStr(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongstrdiv = 3 / "hola";')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongstrdiv = 3 / "hola";')
 
     def testWrongDivisionBool(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongbooldiv = 3 / true;')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongbooldiv = 3 / true;')
 
     def testDivisionByZero(self):
-        self.assertRaises(ParserError, self.parser.parse, 'float divZero = 30 / (2*3 - 6);')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'float divZero = 30 / (2*3 - 6);')
 
     def testWrongExpStr(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongstrexp = 3^"hola";')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongstrexp = 3^"hola";')
 
     def testWrongExpBool(self):
-        self.assertRaises(ParserError, self.parser.parse, 'int wrongboolexp = 3^true;')
+        self.assertRaises(ParserError, self.parser.parse,
+                          'int wrongboolexp = 3^true;')
+
+    def testEqualInvalid(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool equalInvalid = 3 == "hola";')
+
+    def testUnequalInvalid(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool unequalInvalid = 3 != "hola";')
+
+    def testGreaterEqualInvalidStr(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool greaterEqualInvalidStr = 3 >= "hola";')
+
+    def testGreaterEqualInvalidBool(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool greaterEqualInvalidBool = 3 >= true;')
+
+    def testLessEqualInvalidStr(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool lessEqualInvalidStr = 3 <= "hola";')
+
+    def testLessEqualInvalidBool(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool lessEqualInvalidBool = 3 <= true;')
+
+    def testGreaterInvalidStr(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool greaterInvalidStr = 3 > "hola";')
+
+    def testGreaterInvalidBool(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool greaterInvalidBool = 3 > true;')
+
+    def testLessInvalidStr(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool lessInvalidStr = 3 < "hola";')
+
+    def testLessInvalidBool(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool lessInvalidBool = 3 < true;')
+
+    def testInvalidOperatorAnd(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool invalidAnd = 3 and true;')
+
+    def testInvalidOperatorOr(self):
+        self.assertRaises(ParserError, self.parser.parse,
+                          'bool invalidOr = 3 or true;')
 
     def testExistingVariableDeclaration(self):
         code = '''int existing = 1;
