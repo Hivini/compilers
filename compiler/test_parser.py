@@ -203,6 +203,24 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, True)
 
+    def testAndOperator(self):
+        tree = self.parser.parse('bool andop = true and false;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'andop')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, False)
+
+    def testOrOperator(self):
+        tree = self.parser.parse('bool orop = true or false;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'orop')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, True)
+
     def testPrecedence(self):
         tree = self.parser.parse('int precedence = 4/2^2+2*6/4-1;')
         self.assertEqual(len(tree.children), 1)

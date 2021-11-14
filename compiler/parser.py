@@ -29,6 +29,8 @@ class ASTTypes(Enum):
     CMP_LESS_EQUAL = 17
     CMP_GREATER = 18
     CMP_LESS = 19
+    AND_OP = 20
+    OR_OP = 21
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
@@ -196,6 +198,17 @@ class Parser:
                             p[3].value, children=[p[1], p[3]])
         elif p[2] == '<':
             p[0] = TreeNode(ASTTypes.CMP_LESS, value=p[1].value <
+                            p[3].value, children=[p[1], p[3]])
+
+    def p_expression_boolop(self, p):
+        '''declaration : declaration AND_OP declaration
+                    | declaration OR_OP declaration
+        '''
+        if p[2] == 'and':
+            p[0] = TreeNode(ASTTypes.AND_OP, value=p[1].value and
+                            p[3].value, children=[p[1], p[3]])
+        elif p[2] == 'or':
+            p[0] = TreeNode(ASTTypes.OR_OP, value=p[1].value or
                             p[3].value, children=[p[1], p[3]])
 
     def p_expression_group(self, p):
