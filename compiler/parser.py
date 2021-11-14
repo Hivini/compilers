@@ -23,7 +23,12 @@ class ASTTypes(Enum):
     BOOL_TRUE = 10
     BOOL_FALSE = 11
     BOOL_DCL = 12
-    CMP = 13
+    CMP_EQUAL = 14
+    CMP_NOT_EQUAL = 15
+    CMP_GREATER_EQUAL = 16
+    CMP_LESS_EQUAL = 17
+    CMP_GREATER = 18
+    CMP_LESS = 19
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
@@ -166,7 +171,7 @@ class Parser:
             p[0] = TreeNode(ASTTypes.EXPONENT, value=pow(
                 p[1].value, p[3].value), children=[p[1], p[3]])
 
-    def p_expression_boolop(self, p):
+    def p_expression_cmpop(self, p):
         '''declaration : declaration EQUALS declaration
                     | declaration NOT_EQUAL declaration
                     | declaration GREATER_EQUAL declaration
@@ -175,22 +180,22 @@ class Parser:
                     | declaration '<' declaration
         '''
         if p[2] == '==':
-            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value ==
+            p[0] = TreeNode(ASTTypes.CMP_EQUAL, value=p[1].value ==
                             p[3].value, children=[p[1], p[3]])
         elif p[2] == '!=':
-            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value !=
+            p[0] = TreeNode(ASTTypes.CMP_NOT_EQUAL, value=p[1].value !=
                             p[3].value, children=[p[1], p[3]])
         elif p[2] == '>=':
-            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value >=
+            p[0] = TreeNode(ASTTypes.CMP_GREATER_EQUAL, value=p[1].value >=
                             p[3].value, children=[p[1], p[3]])
         elif p[2] == '<=':
-            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value <=
+            p[0] = TreeNode(ASTTypes.CMP_LESS_EQUAL, value=p[1].value <=
                             p[3].value, children=[p[1], p[3]])
         elif p[2] == '>':
-            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value >
+            p[0] = TreeNode(ASTTypes.CMP_GREATER, value=p[1].value >
                             p[3].value, children=[p[1], p[3]])
         elif p[2] == '<':
-            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value <
+            p[0] = TreeNode(ASTTypes.CMP_LESS, value=p[1].value <
                             p[3].value, children=[p[1], p[3]])
 
     def p_expression_group(self, p):
