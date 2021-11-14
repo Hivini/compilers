@@ -166,6 +166,33 @@ class Parser:
             p[0] = TreeNode(ASTTypes.EXPONENT, value=pow(
                 p[1].value, p[3].value), children=[p[1], p[3]])
 
+    def p_expression_boolop(self, p):
+        '''declaration : declaration EQUALS declaration
+                    | declaration NOT_EQUAL declaration
+                    | declaration GREATER_EQUAL declaration
+                    | declaration LESS_EQUAL declaration
+                    | declaration '>' declaration
+                    | declaration '<' declaration
+        '''
+        if p[2] == '==':
+            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value ==
+                            p[3].value, children=[p[1], p[3]])
+        elif p[2] == '!=':
+            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value !=
+                            p[3].value, children=[p[1], p[3]])
+        elif p[2] == '>=':
+            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value >=
+                            p[3].value, children=[p[1], p[3]])
+        elif p[2] == '<=':
+            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value <=
+                            p[3].value, children=[p[1], p[3]])
+        elif p[2] == '>':
+            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value >
+                            p[3].value, children=[p[1], p[3]])
+        elif p[2] == '<':
+            p[0] = TreeNode(ASTTypes.CMP, value=p[1].value <
+                            p[3].value, children=[p[1], p[3]])
+
     def p_expression_group(self, p):
         '''declaration : '(' declaration ')' '''
         p[0] = p[2]

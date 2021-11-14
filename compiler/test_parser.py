@@ -149,6 +149,60 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
         self.assertEqual(tree.children[0].children[0].value, -12)
 
+    def testCmpEqual(self):
+        tree = self.parser.parse('bool cmpequal = 1 == 1;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'cmpequal')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, True)
+
+    def testCmpNotEqual(self):
+        tree = self.parser.parse('bool cmpnotequal = 1 != 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'cmpnotequal')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, True)
+
+    def testCmpGreaterEqual(self):
+        tree = self.parser.parse('bool cmpgreaterequal = 2 >= 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'cmpgreaterequal')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, True)
+
+    def testCmpLessEqual(self):
+        tree = self.parser.parse('bool cmplessequal = 1 <= 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'cmplessequal')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, True)
+
+    def testCmpGreater(self):
+        tree = self.parser.parse('bool cmpgreater = 2 > 1;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'cmpgreater')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, True)
+    
+    def testCmpLess(self):
+        tree = self.parser.parse('bool cmpless = 1 < 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].value, 'cmpless')
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
+        self.assertEqual(tree.children[0].children[0].value, True)
+
     def testPrecedence(self):
         tree = self.parser.parse('int precedence = 4/2^2+2*6/4-1;')
         self.assertEqual(len(tree.children), 1)
