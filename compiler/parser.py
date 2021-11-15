@@ -73,6 +73,9 @@ class TreeNode:
 
 class Parser:
     precedence = (
+        ('left', 'AND_OP', 'OR_OP'),
+        ('left', 'EQUALS', 'NOT_EQUAL'),
+        ('nonassoc', '<', '>', 'GREATER_EQUAL', 'LESS_EQUAL'),
         ('left', '+', '-'),
         ('left', '*', '/'),
         ('left', '^'),
