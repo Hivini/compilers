@@ -61,6 +61,7 @@ def Run():
         root = parser.parse(program)
         if (args.verbose):
             PrintAST(logger, root, 0)
+        logger.LogDebug('Symbol Table:')
         logger.LogDebug(parserInstance.names)
         logger.LogSuccess('Successfully compiled!')
     except ParserError:
