@@ -71,6 +71,30 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].variableValue, 0)
 
+    def testMultiplication(self):
+        tree = self._prepareSemantics('int sum = 2 * 3 + 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.INT)
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].variableValue, 8)
+
+    def testDivision(self):
+        tree = self._prepareSemantics('int div = 4 / 2 + 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.INT)
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].variableValue, 4)
+
+    def testDivisionWithFloat(self):
+        tree = self._prepareSemantics('float div = 4 / 2 + 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.FLOAT_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.FLOAT)
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].variableValue, 4.0)
+
     def testInvalidIntType(self):
         code = '''int invalidinttype = true;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
@@ -97,4 +121,28 @@ class TestParser(unittest.TestCase):
 
     def testInvalidSubstractionString(self):
         code = '''int invalidsumtype = 1 - "true";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidMultiplicationBool(self):
+        code = '''int invalidsumtype = 1 * true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidMultiplicationString(self):
+        code = '''int invalidsumtype = 1 * "true";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidDivisionBool(self):
+        code = '''int invalidsumtype = 1 / true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidDivisionString(self):
+        code = '''int invalidsumtype = 1 / "true";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testDivisionByZero(self):
+        code = '''int invalidsumtype = 1 / 0;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testAssignIntFloatDivision(self):
+        code = '''int invalidsumtype = 1 / 0.23;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)

@@ -93,30 +93,28 @@ class SemanticAnalyzer:
                 if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                     operation.variableType = VariableTypes.FLOAT
                 operation.variableValue = leftNode.variableValue + rightNode.variableValue
-        if operation.type == ASTTypes.SUBSTRACT:
+        elif operation.type == ASTTypes.SUBSTRACT:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                 operation.variableType = VariableTypes.FLOAT
             operation.variableValue = leftNode.variableValue - rightNode.variableValue
-        # elif op == '*':
-        #     if leftT == VariableTypes.FLOAT or rightT == VariableTypes.FLOAT:
-        #         p[0] = ASTNode(
-        #             ASTTypes.MULTIPLICATION, variableType=VariableTypes.FLOAT, children=[p[1], p[3]], variableValue=leftV * rightV)
-        #     else:
-        #         p[0] = ASTNode(
-        #             ASTTypes.MULTIPLICATION, variableType=VariableTypes.INT, children=[p[1], p[3]], variableValue=leftV * rightV)
-        # elif op == '/':
-        #     val = leftV / rightV
-        #     typeVal = VariableTypes.FLOAT
-        #     if leftT == VariableTypes.FLOAT or rightT == VariableTypes.FLOAT:
-        #         p[0] = ASTNode(ASTTypes.DIVISION, variableType=typeVal,
-        #                        variableValue=val, children=[p[1], p[3]])
-        #     else:
-        #         if val.is_integer():
-        #             typeVal = VariableTypes.INT
-        #             val = int(val)
-        #         p[0] = ASTNode(ASTTypes.DIVISION, variableType=typeVal,
-        #                        variableValue=val, children=[p[1], p[3]])
+        elif operation.type == ASTTypes.MULTIPLICATION:
+            operation.variableType = VariableTypes.INT
+            if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
+                operation.variableType = VariableTypes.FLOAT
+            operation.variableValue = leftNode.variableValue * rightNode.variableValue
+        elif operation.type == ASTTypes.DIVISION:
+            operation.variableType = VariableTypes.INT
+            if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
+                operation.variableType = VariableTypes.FLOAT
+            val = leftNode.variableValue / rightNode.variableValue
+            if not val.is_integer():
+                # We are going to check the final result during declaration
+                if operation.variableType == VariableTypes.INT:
+                    operation.variableType = VariableTypes.FLOAT
+            else:
+                val = int(val)
+            operation.variableValue = val
         # elif op == '^':
         #     if leftT == VariableTypes.FLOAT or rightT == VariableTypes.FLOAT or rightV < 0:
         #         p[0] = ASTNode(ASTTypes.EXPONENT, variableType=VariableTypes.FLOAT, variableValue=pow(
@@ -139,18 +137,18 @@ class SemanticAnalyzer:
         elif operation == ASTTypes.SUBSTRACT:
             if not(bothAreNums):
                 self._addError(
-                    f'Cannot substract values "{leftValue}" and "{rightValue}".')
-        # elif operation == '*':
-        #     if not(bothAreNums):
-        #         self._addError(
-        #             f'Cannot multiply values "{leftValue}" and "{rightValue}".')
-        # elif operation == '/':
-        #     if not(bothAreNums):
-        #         self._addError(
-        #             f'Cannot divide values "{leftValue}" and "{rightValue}".')
-        #     elif rightValue == 0:
-        #         self._addError(
-        #             f'{leftValue} / {rightValue} is invalid. Cannot perform division by zero.')
+                    f'Cannot substract values "{leftValue}" and "{rightValue}"', lineno)
+        elif operation == ASTTypes.MULTIPLICATION:
+            if not(bothAreNums):
+                self._addError(
+                    f'Cannot multiply values "{leftValue}" and "{rightValue}"', lineno)
+        elif operation == ASTTypes.DIVISION:
+            if not(bothAreNums):
+                self._addError(
+                    f'Cannot divide values "{leftValue}" and "{rightValue}"', lineno)
+            elif rightValue == 0:
+                self._addError(
+                    f'{leftValue} / {rightValue} is invalid. Cannot perform division by zero', lineno)
         # elif operation == '^':
         #     if not(bothAreNums):
         #         self._addError(
