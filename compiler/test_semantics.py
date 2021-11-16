@@ -107,6 +107,14 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].variableValue, 18)
 
+    def testUMinus(self):
+        tree = self._prepareSemantics('float uminus = -((1 + 2) * 3 + 4.0 + 2^3);')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.FLOAT_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.FLOAT)
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].variableValue, -21)
+
     def testInvalidIntType(self):
         code = '''int invalidinttype = true;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
@@ -166,4 +174,13 @@ class TestParser(unittest.TestCase):
     def testInvalidExponentString(self):
         code = '''int invalidsumtype = 1 ^ "true";'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidUminusBool(self):
+        code = '''int invalidsumtype = -true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidUminusString(self):
+        code = '''int invalidsumtype = -"true";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
 

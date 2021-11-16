@@ -11,7 +11,7 @@ class SemanticAnalyzer:
     declarationTypes = [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL,
                         ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]
     algebraOp = [ASTTypes.SUM, ASTTypes.SUBSTRACT,
-                 ASTTypes.MULTIPLICATION, ASTTypes.DIVISION, ASTTypes.EXPONENT]
+                 ASTTypes.MULTIPLICATION, ASTTypes.DIVISION, ASTTypes.EXPONENT, ASTTypes.UMINUS]
 
     def __init__(self, root: ASTNode, progLines: List[str]) -> None:
         self.root = root
@@ -69,6 +69,16 @@ class SemanticAnalyzer:
 
     def _updateAlgebraNodeValues(self, operation: ASTNode):
         if operation.type not in self.algebraOp:
+            return
+        elif operation.type == ASTTypes.UMINUS:
+            uminusnode = operation.children[0]
+            if uminusnode.variableValue == None:
+                self._updateAlgebraNodeValues(uminusnode)
+            if uminusnode.variableType in [VariableTypes.BOOL, VariableTypes.STRING]:
+                self._addError(
+                    f'Invalid operation "-{uminusnode.variableValue}"', operation.lineno)
+            operation.variableType = uminusnode.variableType
+            operation.variableValue = -uminusnode.variableValue
             return
         leftNode = operation.children[0]
         rightNode = operation.children[1]
