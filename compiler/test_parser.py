@@ -293,3 +293,24 @@ class TestParser(unittest.TestCase):
     def testInvalidVariable(self):
         self.assertRaises(ParserError, self.instance.parseProgram,
                           'int invalidNonExistent = 1 + invalidNonExistent;')
+
+    def testInvalidWhileCondition(self):
+        code = '''while(1 + 1) {
+            int insideInvalidWhileC = 5;  
+        }'''
+        self.assertRaises(ParserError, self.instance.parseProgram, code)
+
+    def testInvalidIfCondition(self):
+        code = '''if (1 + 1) {
+            int insideInvalidIfC = 5;
+        }'''
+        self.assertRaises(ParserError, self.instance.parseProgram, code)
+
+    def testInvalidElifCondition(self):
+        code = '''if (1 == 1) {
+            int insideInvalidElifC = 5;
+        }
+        elif(1 + 1) {
+            int insideInvalidElifC = 5;  
+        }'''
+        self.assertRaises(ParserError, self.instance.parseProgram, code)

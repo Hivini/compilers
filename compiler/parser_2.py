@@ -1,3 +1,4 @@
+# TODO(hivini): Add validation for while, if, elif conditions
 import ply.yacc as yacc
 
 from compiler.lexer import Lexer
@@ -150,10 +151,12 @@ class Parser:
 
     def p_while_statement(self, p):
         '''while_statement : WHILE "(" declaration ")" "{" program "}" '''
+        self._checkIsValidBoolCondition(p[3].type, p.lineno(2))
         p[0] = ASTNode(ASTTypes.WHILE_STATEMENT, children=[p[3], p[6]])
 
     def p_if_statement(self, p):
         '''if_statement : IF "(" declaration ")" "{" program "}" elif else '''
+        self._checkIsValidBoolCondition(p[3].type, p.lineno(2))
         ifNode = ASTNode(ASTTypes.IF, children=[p[3], p[6]])
         children = [ifNode]
         if (p[8] != None):
@@ -167,6 +170,7 @@ class Parser:
                 |
         '''
         if len(p) > 1:
+            self._checkIsValidBoolCondition(p[3].type, p.lineno(2))
             children = [p[3]]
             if (p[6] != None):
                 children.append(p[6])
@@ -360,6 +364,16 @@ class Parser:
                 return
             currentSymbolTable = currentSymbolTable.parent
         self._addError(f'Variable name "{name}" does not exist', lineno)
+
+    def _checkIsValidBoolCondition(self, nodeType: ASTTypes, lineno: int):
+        compareTypes = [ASTTypes.CMP_EQUAL, ASTTypes.CMP_NOT_EQUAL, ASTTypes.CMP_GREATER_EQUAL,
+                    ASTTypes.CMP_LESS_EQUAL, ASTTypes.CMP_GREATER, ASTTypes.CMP_LESS]
+        boolOpTypes = [ASTTypes.AND_OP, ASTTypes.OR_OP]
+        validOptions = [ASTTypes.BOOL_FALSE, ASTTypes.BOOL_TRUE, ASTTypes.VARIABLE]
+        validOptions.extend(compareTypes)
+        validOptions.extend(boolOpTypes)
+        if nodeType not in validOptions:
+            self._addError('Invalid bool condition encountered', lineno)
 
     def parseProgram(self, prog):
         root = self.parser.parse(prog)
