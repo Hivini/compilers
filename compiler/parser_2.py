@@ -130,7 +130,7 @@ class Parser:
         if p[3].variableType != VariableTypes.INT:
             self._addError('Value cannot be assigned to int.', p.lineno(2))
         tmp = ASTNode(ASTTypes.INT_DCL, children=[
-                      p[3]], variableType=p[3].variableType, variableValue=p[2])
+                      p[3]], variableType=p[3].variableType, variableValue=p[3].variableValue, variableName=p[2])
         self._addToNames(p[2], VariableTypes.INT, p[3].variableValue)
         p[0] = tmp
 
@@ -141,13 +141,13 @@ class Parser:
             c = []
             c.extend(p[3].children)
             p[3].children = [
-                ASTNode(ASTTypes.INT_TO_FLOAT, children=c, variableType=VariableTypes.FLOAT)]
+                ASTNode(ASTTypes.INT_TO_FLOAT, children=c, variableType=VariableTypes.FLOAT, variableValue=p[3].variableValue)]
             p[3].variableType = VariableTypes.FLOAT
         elif p[3].variableType != VariableTypes.FLOAT:
             self._addError(
                 'Value cannot be assigned to float.', p.lineno(2))
         tmp = ASTNode(ASTTypes.FLOAT_DCL, children=[
-                      p[3]], variableType=p[3].variableType, variableValue=p[2])
+                      p[3]], variableType=p[3].variableType, variableValue=p[3].variableValue, variableName=p[2])
         self._addToNames(p[2], VariableTypes.FLOAT, p[3].variableValue)
         p[0] = tmp
 
@@ -158,7 +158,7 @@ class Parser:
             self._addError(
                 'Value cannot be assigned to string', p.lineno(2))
         tmp = ASTNode(ASTTypes.STRING_DCL, children=[
-                      p[3]], variableType=p[3].variableType, variableValue=p[2])
+                      p[3]], variableType=p[3].variableType, variableValue=p[3].variableValue, variableName=p[2])
         self._addToNames(p[2], VariableTypes.STRING, p[3].variableValue)
         p[0] = tmp
 
@@ -169,7 +169,7 @@ class Parser:
             self._addError(
                 'Value cannot be assigned to boolean', p.lineno(2))
         tmp = ASTNode(ASTTypes.BOOL_DCL, children=[
-                      p[3]], variableType=p[3].variableType, variableValue=p[2])
+                      p[3]], variableType=p[3].variableType, variableValue=p[3].variableValue, variableName=p[2])
         self._addToNames(p[2], VariableTypes.BOOL, p[3].variableValue)
         p[0] = tmp
 
@@ -296,29 +296,30 @@ class Parser:
         '''declaration : '(' declaration ')' '''
         p[0] = p[2]
 
-    def p_expression_uminus(self, t):
+    def p_expression_uminus(self, p):
         '''declaration : - declaration %prec UMINUS'''
-        t[0] = ASTNode(ASTTypes.UMINUS, value=-t[2].value, children=[t[2]])
+        p[0] = ASTNode(ASTTypes.UMINUS, variableType=p[2].variableType,
+                       variableValue=-p[2].variableValue, children=[p[2]])
 
     def p_expression_intnum(self, p):
         '''declaration : INTNUM '''
         p[0] = ASTNode(
-            ASTTypes.INT, variableType=VariableTypes.INT, variableValue=p[1])
+            ASTTypes.INT, variableType=VariableTypes.INT, variableValue=int(p[1]))
 
     def p_expression_floatnum(self, p):
         '''declaration : FLOATNUM '''
         p[0] = ASTNode(
-            ASTTypes.FLOAT, variableType=VariableTypes.FLOAT, variableValue=p[1])
+            ASTTypes.FLOAT, variableType=VariableTypes.FLOAT, variableValue=float(p[1]))
 
     def p_expression_bool_true(self, p):
         '''declaration : BOOL_TRUE '''
         p[0] = ASTNode(ASTTypes.BOOL_TRUE,
-                       variableType=VariableTypes.BOOL, variableValue=p[1])
+                       variableType=VariableTypes.BOOL, variableValue=True)
 
     def p_expression_bool_false(self, p):
         '''declaration : BOOL_FALSE '''
         p[0] = ASTNode(ASTTypes.BOOL_FALSE,
-                       variableType=VariableTypes.BOOL, variableValue=p[1])
+                       variableType=VariableTypes.BOOL, variableValue=False)
 
     def p_expression_string(self, p):
         '''declaration : STRING '''
