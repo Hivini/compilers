@@ -60,9 +60,8 @@ def Run():
             break
 
     parserInstance = Parser(lines)
-    parser = parserInstance.createParser()
     try:
-        root = parser.parse(program)
+        root = parserInstance.parseProgram(program)
         if (args.verbose):
             PrintAST(logger, root, 0)
         logger.LogDebug('Symbol Table:')
