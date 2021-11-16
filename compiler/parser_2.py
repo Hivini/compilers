@@ -264,7 +264,6 @@ class Parser:
                 f'Unexpected symbol "{p.value}", at line {p.lineno}', p.lineno)
         self._addError('Unexpected end of file reached')
 
-    # def _produceSymbolHelper(current):
     def _produceSymbolTable(self, root):
         if root.type in [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL, ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]:
             self._addToNames(root.variableName, root.variableType, root.lineno)
