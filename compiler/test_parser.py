@@ -6,7 +6,9 @@ from compiler.parser_2 import ASTTypes, Parser, ParserError, VariableTypes
 class TestParser(unittest.TestCase):
 
     def setUp(self):
-        self.instance = Parser(['test', 'line', 'this'])
+        # Just numbers as lines to avoid errors
+        lines = [x for x in range(0, 20)]
+        self.instance = Parser(lines)
 
     def testPrintExp(self):
         code = '''int printexp = 2;
@@ -237,6 +239,24 @@ class TestParser(unittest.TestCase):
         assign = tree.children[0].children[0]
         self.assertEqual(assign.type, ASTTypes.ASSIGN)
         self.assertEqual(assign.children[0].type, ASTTypes.SUBSTRACT)
+
+    def testIfStatement(self):
+        prog = '''if (5 == 5) {
+            int ifstatement1 = 5;
+        } elif (4 == 5) {
+            int elifstatement1 = 7;
+        } else {
+            int elsestatement1 = 8;
+        }
+        '''
+        tree = self.instance.parseProgram(prog)
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.IF_STATEMENT)
+        self.assertEqual(len(tree.children[0].children), 3)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.IF)
+        self.assertEqual(tree.children[0].children[1].type, ASTTypes.ELIF)
+        self.assertEqual(tree.children[0].children[2].type, ASTTypes.ELSE)
+
 
     def testNoEndSentence(self):
         code = '''int noEnd = 2;
