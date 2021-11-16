@@ -10,7 +10,7 @@ class TestParser(unittest.TestCase):
         # Just numbers as lines to avoid errors
         lines = [x for x in range(0, 20)]
         self.parser = Parser(lines)
-    
+
     def _prepareSemantics(self, prog):
         root = self.parser.parseProgram(prog)
         semanticInstance = SemanticAnalyzer(root, self.parser.proglines)
@@ -41,7 +41,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].variableValue, 5)
         self.assertEqual(len(tree.children[0].children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.INT_TO_FLOAT)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.INT_TO_FLOAT)
 
     def testConcatenation(self):
         tree = self._prepareSemantics('string floatSum = "hola" + " mundo";')
@@ -51,17 +52,20 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].variableValue, "hola mundo")
         self.assertEqual(len(tree.children[0].children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.CONCATENATION)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.CONCATENATION)
 
     def testConcatenationWithNums(self):
-        tree = self._prepareSemantics('string floatSum = "hola" + " mundo" + 2;')
+        tree = self._prepareSemantics(
+            'string floatSum = "hola" + " mundo" + 2;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.STRING_DCL)
         self.assertEqual(tree.children[0].variableType, VariableTypes.STRING)
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].variableValue, "hola mundo2")
         self.assertEqual(len(tree.children[0].children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.CONCATENATION)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].type, ASTTypes.CONCATENATION)
 
     def testSubstraction(self):
         tree = self._prepareSemantics('int sum = 1 - 3 + 2;')
@@ -101,12 +105,12 @@ class TestParser(unittest.TestCase):
 
     def testInvalidFloatType(self):
         code = '''float invalidfloattype = true;'''
-        self.assertRaises(SemanticError, self._prepareSemantics, code) 
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
 
     def testInvalidStringType(self):
         code = '''string invalidstringtype = true;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
-    
+
     def testInvalidBoolType(self):
         code = '''bool invalidbooltype = "Hola";'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
