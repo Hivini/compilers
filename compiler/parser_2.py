@@ -17,15 +17,15 @@ class VariableTypes(Enum):
 
 
 class Variable:
-    def __init__(self, type: VariableTypes, value: any) -> None:
+    def __init__(self, type: VariableTypes, lineno: any) -> None:
         self.type = type
-        self.value = value
+        self.lineno = lineno
 
     def __str__(self) -> str:
-        return f'| Type: {self.type}, Value: {self.value} |'
+        return f'| Type: {self.type}, Line: {self.lineno} |'
 
     def __repr__(self) -> str:
-        return f'| Type: {self.type}, Value: {self.value} |'
+        return f'| Type: {self.type}, Line: {self.lineno} |'
 
 
 class ASTTypes(Enum):
@@ -131,25 +131,25 @@ class Parser:
         '''statement : INTDCL NAME assignment
         '''
         p[0] = ASTNode(ASTTypes.INT_DCL, children=[p[3]],
-                       variableName=p[2], lineno=p.lineno(2))
+                       variableName=p[2], variableType=VariableTypes.INT, lineno=p.lineno(2))
 
     def p_statement_declare_float(self, p):
         '''statement : FLOATDCL NAME assignment
         '''
         p[0] = ASTNode(ASTTypes.FLOAT_DCL, children=[p[3]],
-                       variableName=p[2], lineno=p.lineno(2))
+                       variableName=p[2], variableType=VariableTypes.FLOAT, lineno=p.lineno(2))
 
     def p_statement_declare_string(self, p):
         '''statement : STRING_DCL NAME assignment
         '''
         p[0] = ASTNode(ASTTypes.STRING_DCL, children=[p[3]],
-                       variableName=p[2], lineno=p.lineno(2))
+                       variableName=p[2], variableType=VariableTypes.STRING, lineno=p.lineno(2))
 
     def p_statement_declare_boolean(self, p):
         '''statement : BOOL_DCL NAME assignment
         '''
         p[0] = ASTNode(ASTTypes.BOOL_DCL, children=[p[3]],
-                       variableName=p[2], lineno=p.lineno(2))
+                       variableName=p[2], variableType=VariableTypes.BOOL, lineno=p.lineno(2))
 
     def p_assignment(self, p):
         '''assignment : '=' declaration '''
@@ -264,5 +264,19 @@ class Parser:
                 f'Unexpected symbol "{p.value}", at line {p.lineno}', p.lineno)
         self._addError('Unexpected end of file reached')
 
+    # def _produceSymbolHelper(current):
+    def _produceSymbolTable(self, root):
+        if root.type in [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL, ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]:
+            self._addToNames(root.variableName, root.variableType, root.lineno)
+        for c in root.children:
+            self._produceSymbolTable(c)
+
+    def _addToNames(self, name: str, type: VariableTypes, lineno: int):
+        if name in self.names:
+            self._addError(f'Variable name "{name}" already exists', lineno)
+        self.names[name] = Variable(type, lineno)
+
     def parseProgram(self, prog):
-        return self.parser.parse(prog)
+        root = self.parser.parse(prog)
+        self._produceSymbolTable(root)
+        return root
