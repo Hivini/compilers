@@ -21,6 +21,7 @@ class SymbolTable:
     def __repr__(self) -> str:
         return str(self.table)
 
+
 class VariableTypes(Enum):
     INT = 1
     FLOAT = 2
@@ -67,7 +68,8 @@ class ASTTypes(Enum):
     ELSE = 24
     IF_STATEMENT = 25
     WHILE_STATEMENT = 26
-    INT_TO_FLOAT = 28
+    REASSIGN = 28
+    INT_TO_FLOAT = 29
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
@@ -184,28 +186,29 @@ class Parser:
             p[0] = ASTNode(ASTTypes.ELSE, children=children)
 
     def p_statement_declare_int(self, p):
-        '''statement : INTDCL NAME assignment
-        '''
+        '''statement : INTDCL NAME assignment '''
         p[0] = ASTNode(ASTTypes.INT_DCL, children=[p[3]],
                        variableName=p[2], variableType=VariableTypes.INT, lineno=p.lineno(2))
 
     def p_statement_declare_float(self, p):
-        '''statement : FLOATDCL NAME assignment
-        '''
+        '''statement : FLOATDCL NAME assignment '''
         p[0] = ASTNode(ASTTypes.FLOAT_DCL, children=[p[3]],
                        variableName=p[2], variableType=VariableTypes.FLOAT, lineno=p.lineno(2))
 
     def p_statement_declare_string(self, p):
-        '''statement : STRING_DCL NAME assignment
-        '''
+        '''statement : STRING_DCL NAME assignment '''
         p[0] = ASTNode(ASTTypes.STRING_DCL, children=[p[3]],
                        variableName=p[2], variableType=VariableTypes.STRING, lineno=p.lineno(2))
 
     def p_statement_declare_boolean(self, p):
-        '''statement : BOOL_DCL NAME assignment
-        '''
+        '''statement : BOOL_DCL NAME assignment '''
         p[0] = ASTNode(ASTTypes.BOOL_DCL, children=[p[3]],
                        variableName=p[2], variableType=VariableTypes.BOOL, lineno=p.lineno(2))
+
+    def p_statement_assign_variable(self, p):
+        '''statement : NAME assignment '''
+        p[0] = ASTNode(ASTTypes.REASSIGN, children=[p[2]],
+                       lineno=p.lineno(1), variableName=p[1])
 
     def p_assignment(self, p):
         '''assignment : '=' declaration '''
@@ -330,7 +333,8 @@ class Parser:
                 root.symbolTable.parent.children.append(root.symbolTable)
             currentTable = root.symbolTable
         elif root.type in [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL, ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]:
-            self._addToNames(currentTable, root.variableName, root.variableType, root.lineno)
+            self._addToNames(currentTable, root.variableName,
+                             root.variableType, root.lineno)
         for c in root.children:
             self._produceSymbolTable(c, currentTable)
 
@@ -338,7 +342,8 @@ class Parser:
         currentSymbolTable = symbolTable
         while currentSymbolTable != None:
             if name in currentSymbolTable.table:
-                self._addError(f'Variable name "{name}" already exists', lineno)
+                self._addError(
+                    f'Variable name "{name}" already exists', lineno)
             currentSymbolTable = currentSymbolTable.parent
         symbolTable.table[name] = Variable(type, lineno)
 

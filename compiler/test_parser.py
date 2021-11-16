@@ -80,6 +80,17 @@ class TestParser(unittest.TestCase):
         self.assertEqual(
             tree.children[0].children[0].children[0].variableType, VariableTypes.BOOL)
 
+    def testReassign(self):
+        prog = '''int reassignment = 5;
+        reassignment = 5 + reassignment;
+        '''
+        tree = self.instance.parseProgram(prog)
+        self.assertEqual(len(tree.children), 2)
+        self.assertEqual(tree.children[1].type, ASTTypes.REASSIGN)
+        self.assertEqual(tree.children[1].variableName, 'reassignment')
+        self.assertEqual(len(tree.children[1].children), 1)
+        self.assertEqual(tree.children[1].children[0].type, ASTTypes.ASSIGN)
+
     def testAssignSum(self):
         tree = self.instance.parseProgram('int sum = 2 + 3;')
         self.assertEqual(len(tree.children), 1)
