@@ -31,6 +31,11 @@ class ASTTypes(Enum):
     CMP_LESS = 19
     AND_OP = 20
     OR_OP = 21
+    IF = 22
+    ELIF = 23
+    ELSE = 24
+    IF_STATEMENT = 25
+    BLOCK = 26
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
@@ -73,6 +78,9 @@ class TreeNode:
 
 class Parser:
     precedence = (
+        ('left', 'AND_OP', 'OR_OP'),
+        ('left', 'EQUALS', 'NOT_EQUAL'),
+        ('nonassoc', '<', '>', 'GREATER_EQUAL', 'LESS_EQUAL'),
         ('left', '+', '-'),
         ('left', '*', '/'),
         ('left', '^'),
@@ -103,8 +111,56 @@ class Parser:
             p[0] = TreeNode(ASTTypes.PROGRAM, [p[1]])
 
     def p_line(self, p):
-        '''expression : statement SENTENCE_END '''
+        '''expression : statement SENTENCE_END
+                        | block
+        '''
         p[0] = p[1]
+
+
+    def p_block_if(self, p):
+        '''block : IF "(" declaration ")" "{" program "}" elif else '''
+        if not isinstance(p[3].value, bool):
+            self._addError(
+                'If expression must have a boolean value in the declaration.')
+        ifchildren = [p[3]]
+        if (p[6] != None):
+            ifchildren.append(p[6])
+        ifNode = TreeNode(ASTTypes.IF, children=ifchildren, value=p[3].value)
+        children = [ifNode]
+        if (p[8] != None):
+            children.append(p[8])
+        if (p[9] != None):
+            children.append(p[9])
+        p[0] = TreeNode(ASTTypes.IF_STATEMENT, children=children, value=None)
+
+    def p_block_elif(self, p):
+        '''elif : ELIF "(" declaration ")" "{" program "}" elif
+                |
+        '''
+        if len(p) > 1:
+            if not isinstance(p[3].value, bool):
+                self._addError(
+                    'Elif expression must have a boolean value in the declaration.')
+            children = [p[3]]
+            if (p[6] != None):
+                children.append(p[6])
+            if (p[8] != None):
+                children.append(p[8])
+            if len(p) > 1:
+                p[0] = TreeNode(
+                    ASTTypes.ELIF, children=children, value=p[3].value)
+
+    def p_block_else(self, p):
+        '''else : ELSE "{" program "}"
+                |
+        '''
+        if len(p) > 1:
+            children = []
+            if (p[3] != None):
+                children.append(p[3])
+            if len(p) > 1:
+                p[0] = TreeNode(
+                    ASTTypes.ELSE, children=children, value=p[3].value)
 
     def p_statement_declare_int(self, p):
         '''statement : INTDCL NAME assignment

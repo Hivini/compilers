@@ -4,16 +4,28 @@ import os
 from compiler.lexer import Lexer
 
 from compiler.logger import Logger
-from compiler.parser import Parser, ParserError
+from compiler.parser_2 import Parser, ParserError
 
 
 def PrintAST(logger, current, depth):
     spaces = '\t'*depth
     logger.LogDebug(f'{spaces}-{current.type.name}')
-    if current.value != None:
-        logger.LogDebug(f'{spaces}| {current.value}')
+    if current.lineno != None:
+        logger.LogDebug(f'{spaces}| line no. {current.lineno}')
+    if current.variableType != None:
+        logger.LogDebug(f'{spaces}| {current.variableType}')
+    if current.variableName != None:
+        logger.LogDebug(f'{spaces}| {current.variableName}')
+    if current.variableValue != None:
+        logger.LogDebug(f'{spaces}| {current.variableValue}')
     for c in current.children:
         PrintAST(logger, c, depth+1)
+
+def PrintSymbolTable(logger, current, depth):
+    spaces = '\t'*depth
+    logger.LogDebug(f'{spaces}-{current.table}')
+    for c in current.children:
+        PrintSymbolTable(logger, c, depth+1)
 
 
 def Run():
@@ -55,13 +67,14 @@ def Run():
         if not tok:
             break
 
-    parserInstance = Parser()
-    parser = parserInstance.createParser()
+    parserInstance = Parser(lines)
     try:
-        root = parser.parse(program)
+        root = parserInstance.parseProgram(program)
         if (args.verbose):
             PrintAST(logger, root, 0)
-        logger.LogDebug(parserInstance.names)
+        if (args.verbose):
+            logger.LogDebug('Symbol Tables:')
+            PrintSymbolTable(logger, parserInstance.symbolTable, 0)
         logger.LogSuccess('Successfully compiled!')
     except ParserError:
         logger.LogError(parserInstance.first_error)
