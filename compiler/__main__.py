@@ -21,6 +21,12 @@ def PrintAST(logger, current, depth):
     for c in current.children:
         PrintAST(logger, c, depth+1)
 
+def PrintSymbolTable(logger, current, depth):
+    spaces = '\t'*depth
+    logger.LogDebug(f'{spaces}-{current.table}')
+    for c in current.children:
+        PrintSymbolTable(logger, c, depth+1)
+
 
 def Run():
     # Parse arguments
@@ -66,8 +72,9 @@ def Run():
         root = parserInstance.parseProgram(program)
         if (args.verbose):
             PrintAST(logger, root, 0)
-        logger.LogDebug('Symbol Table:')
-        logger.LogDebug(parserInstance.names)
+        if (args.verbose):
+            logger.LogDebug('Symbol Tables:')
+            PrintSymbolTable(logger, parserInstance.symbolTable, 0)
         logger.LogSuccess('Successfully compiled!')
     except ParserError:
         logger.LogError(parserInstance.first_error)

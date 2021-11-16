@@ -2,12 +2,24 @@ import ply.yacc as yacc
 
 from compiler.lexer import Lexer
 from enum import Enum
-from typing import Dict, List
+from typing import List
 
 
 class ParserError(Exception):
     pass
 
+
+class SymbolTable:
+    def __init__(self, table, parent):
+        self.table = table
+        self.parent = parent
+        self.children = []
+
+    def __str__(self) -> str:
+        return str(self.table)
+
+    def __repr__(self) -> str:
+        return str(self.table)
 
 class VariableTypes(Enum):
     INT = 1
@@ -67,7 +79,7 @@ class ASTTypes(Enum):
 class ASTNode:
     def __init__(self, type: ASTTypes, children: List[any] = None,
                  variableType: VariableTypes = None, variableValue: any = None,
-                 variableName: str = None, symbolTable=None, lineno: int = None):
+                 variableName: str = None, symbolTable: SymbolTable = None, lineno: int = None):
         self.type = type
         if children:
             self.children = children
@@ -94,8 +106,6 @@ class Parser:
         ('right', 'UMINUS'),
     )
 
-    names = {}
-
     def __init__(self, proglines) -> None:
         self.lexerInstance = Lexer()
         self.lexer = self.lexerInstance.createLexer()
@@ -103,6 +113,7 @@ class Parser:
         self.start = 'program'
         self.first_error = ''
         self.proglines = proglines
+        self.symbolTable = None
         self.parser = yacc.yacc(module=self)
 
     def _addError(self, error: str, lineNumber: int = None):
@@ -124,8 +135,46 @@ class Parser:
 
     def p_line(self, p):
         '''expression : statement SENTENCE_END
+                        | block_statement
         '''
         p[0] = p[1]
+
+    def p_block_statement(self, p):
+        '''block_statement : if_statement '''
+        p[0] = p[1]
+
+    def p_if_statement(self, p):
+        '''if_statement : IF "(" declaration ")" "{" program "}" elif else '''
+        ifNode = ASTNode(ASTTypes.IF, children=[p[3], p[6]])
+        children = [ifNode]
+        if (p[8] != None):
+            children.append(p[8])
+        if (p[9] != None):
+            children.append(p[9])
+        p[0] = ASTNode(ASTTypes.IF_STATEMENT, children=children)
+
+    def p_block_elif(self, p):
+        '''elif : ELIF "(" declaration ")" "{" program "}" elif
+                |
+        '''
+        if len(p) > 1:
+            children = [p[3]]
+            if (p[6] != None):
+                children.append(p[6])
+            if (p[8] != None):
+                children.append(p[8])
+            p[0] = ASTNode(
+                ASTTypes.ELIF, children=children)
+
+    def p_block_else(self, p):
+        '''else : ELSE "{" program "}"
+                |
+        '''
+        if len(p) > 1:
+            children = []
+            if (p[3] != None):
+                children.append(p[3])
+            p[0] = ASTNode(ASTTypes.ELSE, children=children)
 
     def p_statement_declare_int(self, p):
         '''statement : INTDCL NAME assignment
@@ -157,7 +206,7 @@ class Parser:
 
     def p_expression_print(self, p):
         '''statement : PRINT '(' declaration ')' '''
-        p[0] = ASTNode(ASTTypes.PRINT, [p[3]])
+        p[0] = ASTNode(ASTTypes.PRINT, [p[3]], lineno=p.lineno(1))
 
     def p_expression_binop(self, p):
         '''declaration : declaration '+' declaration
@@ -264,18 +313,30 @@ class Parser:
                 f'Unexpected symbol "{p.value}", at line {p.lineno}', p.lineno)
         self._addError('Unexpected end of file reached')
 
-    def _produceSymbolTable(self, root):
-        if root.type in [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL, ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]:
-            self._addToNames(root.variableName, root.variableType, root.lineno)
+    def _produceSymbolTable(self, root: ASTNode, currentTable: SymbolTable):
+        if root.type == ASTTypes.BLOCK:
+            # Global variables
+            if currentTable == None:
+                root.symbolTable = SymbolTable({}, None)
+            else:
+                root.symbolTable = SymbolTable({}, currentTable)
+                root.symbolTable.parent.children.append(root.symbolTable)
+            currentTable = root.symbolTable
+        elif root.type in [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL, ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]:
+            self._addToNames(currentTable, root.variableName, root.variableType, root.lineno)
         for c in root.children:
-            self._produceSymbolTable(c)
+            self._produceSymbolTable(c, currentTable)
 
-    def _addToNames(self, name: str, type: VariableTypes, lineno: int):
-        if name in self.names:
-            self._addError(f'Variable name "{name}" already exists', lineno)
-        self.names[name] = Variable(type, lineno)
+    def _addToNames(self, symbolTable: SymbolTable, name: str, type: VariableTypes, lineno: int):
+        currentSymbolTable = symbolTable
+        while currentSymbolTable != None:
+            if name in currentSymbolTable.table:
+                self._addError(f'Variable name "{name}" already exists', lineno)
+            currentSymbolTable = currentSymbolTable.parent
+        symbolTable.table[name] = Variable(type, lineno)
 
     def parseProgram(self, prog):
         root = self.parser.parse(prog)
-        self._produceSymbolTable(root)
+        self._produceSymbolTable(root, None)
+        self.symbolTable = root.symbolTable
         return root
