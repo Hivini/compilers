@@ -30,14 +30,19 @@ class VariableTypes(Enum):
 
 
 class Variable:
-    def __init__(self, type: VariableTypes, lineno: any) -> None:
+    def __init__(self, type: VariableTypes, lineno: any, value: any = None) -> None:
         self.type = type
         self.lineno = lineno
+        self.value = None
 
     def __str__(self) -> str:
+        if self.value:
+            return f'| Type: {self.type}, Line: {self.lineno}, Value: {self.value} |'
         return f'| Type: {self.type}, Line: {self.lineno} |'
 
     def __repr__(self) -> str:
+        if self.value:
+            return f'| Type: {self.type}, Line: {self.lineno}, Value: {self.value} |'
         return f'| Type: {self.type}, Line: {self.lineno} |'
 
 
