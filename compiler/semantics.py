@@ -93,24 +93,11 @@ class SemanticAnalyzer:
                 if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                     operation.variableType = VariableTypes.FLOAT
                 operation.variableValue = leftNode.variableValue + rightNode.variableValue
-
-        # if op == '+':
-        #     if leftT == VariableTypes.STRING or rightT == VariableTypes.STRING:
-        #         p[0] = ASTNode(ASTTypes.CONCATENATION, children=[
-        #                        p[1], p[3]], variableType=VariableTypes.STRING, variableValue=str(leftV) + str(rightV))
-        #     elif leftT == VariableTypes.FLOAT or rightT == VariableTypes.FLOAT:
-        #         p[0] = ASTNode(
-        #             ASTTypes.SUM, variableType=VariableTypes.FLOAT, children=[p[1], p[3]], variableValue=leftV + rightV)
-        #     else:
-        #         p[0] = ASTNode(
-        #             ASTTypes.SUM, variableType=VariableTypes.INT, children=[p[1], p[3]], variableValue=leftV + rightV)
-        # elif op == '-':
-        #     if leftT == VariableTypes.FLOAT or rightT == VariableTypes.FLOAT:
-        #         p[0] = ASTNode(
-        #             ASTTypes.SUBSTRACT, variableType=VariableTypes.FLOAT, children=[p[1], p[3]], variableValue=leftV - rightV)
-        #     else:
-        #         p[0] = ASTNode(
-        #             ASTTypes.SUBSTRACT, variableType=VariableTypes.INT, children=[p[1], p[3]], variableValue=leftV - rightV)
+        if operation.type == ASTTypes.SUBSTRACT:
+            operation.variableType = VariableTypes.INT
+            if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
+                operation.variableType = VariableTypes.FLOAT
+            operation.variableValue = leftNode.variableValue - rightNode.variableValue
         # elif op == '*':
         #     if leftT == VariableTypes.FLOAT or rightT == VariableTypes.FLOAT:
         #         p[0] = ASTNode(
@@ -149,10 +136,10 @@ class SemanticAnalyzer:
             if leftType == VariableTypes.BOOL or rightType == VariableTypes.BOOL:
                 self._addError(
                     f'Cannot sum values "{leftValue}" and "{rightValue}"', lineno)
-        # elif operation == '-':
-        #     if not(bothAreNums):
-        #         self._addError(
-        #             f'Cannot substract values "{leftValue}" and "{rightValue}".')
+        elif operation == ASTTypes.SUBSTRACT:
+            if not(bothAreNums):
+                self._addError(
+                    f'Cannot substract values "{leftValue}" and "{rightValue}".')
         # elif operation == '*':
         #     if not(bothAreNums):
         #         self._addError(

@@ -63,6 +63,14 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].children[0].type, ASTTypes.CONCATENATION)
 
+    def testSubstraction(self):
+        tree = self._prepareSemantics('int sum = 1 - 3 + 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.INT)
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].variableValue, 0)
+
     def testInvalidIntType(self):
         code = '''int invalidinttype = true;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
@@ -77,4 +85,16 @@ class TestParser(unittest.TestCase):
     
     def testInvalidBoolType(self):
         code = '''bool invalidbooltype = "Hola";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidSum(self):
+        code = '''int invalidsumtype = 1 + true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidSubstractionBool(self):
+        code = '''int invalidsumtype = 1 - true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidSubstractionString(self):
+        code = '''int invalidsumtype = 1 - "true";'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
