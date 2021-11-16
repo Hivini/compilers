@@ -1,6 +1,6 @@
 import unittest
 
-from compiler.parser import ASTTypes, Parser, ParserError, VariableTypes
+from compiler.parser import ASTTypes, Parser, VariableTypes
 from compiler.semantics import SemanticAnalyzer, SemanticError
 
 
@@ -16,6 +16,17 @@ class TestParser(unittest.TestCase):
         semanticInstance = SemanticAnalyzer(root, self.parser.proglines)
         semanticInstance.checkSemantics()
         return root
+
+    def testVariableOperation(self):
+        code = '''int variable = 2;
+        int variableOperation = 1 + variable;
+        '''
+        tree = self._prepareSemantics(code)
+        self.assertEqual(len(tree.children), 2)
+        self.assertEqual(tree.children[1].type, ASTTypes.INT_DCL)
+        self.assertEqual(tree.children[1].variableType, VariableTypes.INT)
+        self.assertEqual(len(tree.children[1].children), 1)
+        self.assertEqual(tree.children[1].variableValue, 3)
 
     def testIntegerSum(self):
         tree = self._prepareSemantics('int integerSum = 5+2;')
@@ -108,7 +119,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].variableValue, 18)
 
     def testUMinus(self):
-        tree = self._prepareSemantics('float uminus = -((1 + 2) * 3 + 4.0 + 2^3);')
+        tree = self._prepareSemantics(
+            'float uminus = -((1 + 2) * 3 + 4.0 + 2^3);')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.FLOAT_DCL)
         self.assertEqual(tree.children[0].variableType, VariableTypes.FLOAT)
@@ -182,5 +194,3 @@ class TestParser(unittest.TestCase):
     def testInvalidUminusString(self):
         code = '''int invalidsumtype = -"true";'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
-
-

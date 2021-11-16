@@ -1,5 +1,5 @@
 from typing import List
-from compiler.parser import ASTNode, ASTTypes, SymbolTable, VariableTypes
+from compiler.parser import ASTNode, ASTTypes, SymbolTable, Variable, VariableTypes
 
 
 class SemanticError(Exception):
@@ -29,7 +29,7 @@ class SemanticAnalyzer:
         elif nodeType in self.declarationTypes:
             # Assign > Operations[]
             baseOperation = currentNode.children[0].children[0]
-            self._updateAlgebraNodeValues(baseOperation)
+            self._updateAlgebraNodeValues(baseOperation, symbolTable)
             newType = baseOperation.variableType
             newValue = baseOperation.variableValue
             # Get transformed value if it applies.
@@ -67,13 +67,13 @@ class SemanticAnalyzer:
                 f'Cannot assign {newType.name} to BOOL value', lineno)
         return node
 
-    def _updateAlgebraNodeValues(self, operation: ASTNode):
+    def _updateAlgebraNodeValues(self, operation: ASTNode, symbolTable: SymbolTable):
         if operation.type not in self.algebraOp:
             return
         elif operation.type == ASTTypes.UMINUS:
             uminusnode = operation.children[0]
             if uminusnode.variableValue == None:
-                self._updateAlgebraNodeValues(uminusnode)
+                self._updateAlgebraNodeValues(uminusnode, symbolTable)
             if uminusnode.variableType in [VariableTypes.BOOL, VariableTypes.STRING]:
                 self._addError(
                     f'Invalid operation "-{uminusnode.variableValue}"', operation.lineno)
@@ -84,9 +84,20 @@ class SemanticAnalyzer:
         rightNode = operation.children[1]
         # Having no value means that it needs to be calculated.
         if leftNode.variableValue == None:
-            self._updateAlgebraNodeValues(leftNode)
+            self._updateAlgebraNodeValues(leftNode, symbolTable)
         if rightNode.variableValue == None:
-            self._updateAlgebraNodeValues(rightNode)
+            self._updateAlgebraNodeValues(rightNode, symbolTable)
+        if leftNode.type == ASTTypes.VARIABLE:
+            resultVariable = self._searchVariableValue(
+                leftNode.variableName, symbolTable, leftNode.lineno)
+            leftNode.variableType = resultVariable.type
+            leftNode.variableValue = resultVariable.value
+        if rightNode.type == ASTTypes.VARIABLE:
+            resultVariable = self._searchVariableValue(
+                rightNode.variableName, symbolTable, rightNode.lineno)
+            rightNode.variableType = resultVariable.type
+            rightNode.variableValue = resultVariable.value
+
         self._checkArithmeticOperation(
             leftNode, rightNode, operation.type, operation.lineno)
         leftType = leftNode.variableType
@@ -162,6 +173,15 @@ class SemanticAnalyzer:
             if not(bothAreNums):
                 self._addError(
                     f'Cannot get the exponent of "{leftValue}" ^ "{rightValue}"', lineno)
+
+    def _searchVariableValue(self, name: str, symbolTable: SymbolTable, lineno: int) -> Variable:
+        currentSymbolTable = symbolTable
+        while currentSymbolTable != None:
+            if name in currentSymbolTable.table:
+                return currentSymbolTable.table[name]
+            currentSymbolTable = currentSymbolTable.parent
+        # This should happen btw since it was covered in the parser.
+        self._addError(f'Cannot find value {name} in any scope.', lineno)
 
     def _addError(self, error: str, lineNumber: int = None):
         if lineNumber:
