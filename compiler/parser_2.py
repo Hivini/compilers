@@ -67,7 +67,7 @@ class ASTTypes(Enum):
 class ASTNode:
     def __init__(self, type: ASTTypes, children: List[any] = None,
                  variableType: VariableTypes = None, variableValue: any = None,
-                 variableName: str = None, symbolTable = None):
+                 variableName: str = None, symbolTable = None, lineno: int = None):
         self.type = type
         if children:
             self.children = children
@@ -77,6 +77,7 @@ class ASTNode:
         self.variableValue = variableValue
         self.variableName = variableName
         self.symbolTable = symbolTable
+        self.lineno = lineno
 
     def __str__(self) -> str:
         return f'{self.type.name}'
@@ -130,22 +131,22 @@ class Parser:
     def p_statement_declare_int(self, p):
         '''statement : INTDCL NAME assignment
         '''
-        p[0] = ASTNode(ASTTypes.INT_DCL, children=[p[3]], variableName=p[2])
+        p[0] = ASTNode(ASTTypes.INT_DCL, children=[p[3]], variableName=p[2], lineno=p.lineno(2))
 
     def p_statement_declare_float(self, p):
         '''statement : FLOATDCL NAME assignment
         '''
-        p[0] = ASTNode(ASTTypes.FLOAT_DCL, children=[p[3]], variableName=p[2])
+        p[0] = ASTNode(ASTTypes.FLOAT_DCL, children=[p[3]], variableName=p[2], lineno=p.lineno(2))
 
     def p_statement_declare_string(self, p):
         '''statement : STRING_DCL NAME assignment
         '''
-        p[0] = ASTNode(ASTTypes.STRING_DCL, children=[p[3]], variableName=p[2])
+        p[0] = ASTNode(ASTTypes.STRING_DCL, children=[p[3]], variableName=p[2], lineno=p.lineno(2))
 
     def p_statement_declare_boolean(self, p):
         '''statement : BOOL_DCL NAME assignment
         '''
-        p[0] = ASTNode(ASTTypes.BOOL_DCL, children=[p[3]], variableName=p[2])
+        p[0] = ASTNode(ASTTypes.BOOL_DCL, children=[p[3]], variableName=p[2], lineno=p.lineno(2))
 
     def p_assignment(self, p):
         '''assignment : '=' declaration '''
@@ -240,7 +241,7 @@ class Parser:
 
     def p_expression_name(self, p):
         '''declaration : NAME '''
-        p[0] = ASTNode(ASTTypes.VARIABLE, variableName=p[1])
+        p[0] = ASTNode(ASTTypes.VARIABLE, variableName=p[1], lineno=p.lineno(1))
 
     def p_error(self, p):
         if p:

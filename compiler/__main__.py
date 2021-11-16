@@ -10,6 +10,8 @@ from compiler.parser_2 import Parser, ParserError
 def PrintAST(logger, current, depth):
     spaces = '\t'*depth
     logger.LogDebug(f'{spaces}-{current.type.name}')
+    if current.lineno != None:
+        logger.LogDebug(f'{spaces}| line no. {current.lineno}')
     if current.variableType != None:
         logger.LogDebug(f'{spaces}| {current.variableType}')
     if current.variableName != None:
