@@ -175,6 +175,30 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
         self.assertEqual(tree.children[0].variableValue, False)
 
+    def testAndOpBools(self):
+        tree = self._prepareSemantics(
+            'bool andbools = true and false;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, False)
+
+    def testAndOpBoolInt(self):
+        tree = self._prepareSemantics(
+            'bool andbools = false and 1;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, False)
+
+    def testAndOpBoolIntZero(self):
+        tree = self._prepareSemantics(
+            'bool andbools = true and 0;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, False)
+
     def testInvalidIntType(self):
         code = '''int invalidinttype = true;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
@@ -281,4 +305,28 @@ class TestParser(unittest.TestCase):
 
     def testInvalidCMPLBool(self):
         code = '''bool invcmplb = 2 < true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidAndOpNumNum(self):
+        code = '''bool andopnumnum = 2 and 2;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidAndOpBoolString(self):
+        code = '''bool andopnumnum = true and "string";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidAndOpIntString(self):
+        code = '''bool andopnumnum = 1 and "string";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidOrOpNumNum(self):
+        code = '''bool oropnumnum = 2 or 2;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidAndOpBoolString(self):
+        code = '''bool oropnumnum = true or "string";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidAndOpIntString(self):
+        code = '''bool oropnumnum = 1 or "string";'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)

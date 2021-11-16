@@ -12,8 +12,9 @@ class SemanticAnalyzer:
                         ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]
     algebraOp = [ASTTypes.SUM, ASTTypes.SUBSTRACT,
                  ASTTypes.MULTIPLICATION, ASTTypes.DIVISION, ASTTypes.EXPONENT, ASTTypes.UMINUS]
-    boolAlgebraOp = [ASTTypes.CMP_EQUAL, ASTTypes.CMP_NOT_EQUAL, ASTTypes.CMP_GREATER_EQUAL,
-                     ASTTypes.CMP_LESS_EQUAL, ASTTypes.CMP_GREATER, ASTTypes.CMP_LESS]
+    comparisonOp = [ASTTypes.CMP_EQUAL, ASTTypes.CMP_NOT_EQUAL, ASTTypes.CMP_GREATER_EQUAL,
+                    ASTTypes.CMP_LESS_EQUAL, ASTTypes.CMP_GREATER, ASTTypes.CMP_LESS]
+    boolOp = [ASTTypes.AND_OP, ASTTypes.OR_OP]
 
     def __init__(self, root: ASTNode, progLines: List[str]) -> None:
         self.root = root
@@ -70,7 +71,9 @@ class SemanticAnalyzer:
         return node
 
     def _updateAlgebraNodeValues(self, operation: ASTNode, symbolTable: SymbolTable):
-        if not (operation.type in self.algebraOp or operation.type in self.boolAlgebraOp):
+        if not (operation.type in self.algebraOp or
+                operation.type in self.comparisonOp or
+                operation.type in self.boolOp):
             return
         elif operation.type == ASTTypes.UMINUS:
             uminusnode = operation.children[0]
@@ -103,8 +106,11 @@ class SemanticAnalyzer:
         if operation.type in self.algebraOp:
             self._checkArithmeticOperation(
                 leftNode, rightNode, operation.type, operation.lineno)
-        elif operation.type in self.boolAlgebraOp:
+        elif operation.type in self.comparisonOp:
             self._checkComparisonOperation(
+                leftNode, rightNode, operation.type, operation.lineno)
+        elif operation.type in self.boolOp:
+            self._checkBoolOperator(
                 leftNode, rightNode, operation.type, operation.lineno)
         leftType = leftNode.variableType
         rightType = rightNode.variableType
@@ -166,6 +172,28 @@ class SemanticAnalyzer:
         elif operation.type == ASTTypes.CMP_LESS:
             operation.variableType = VariableTypes.BOOL
             operation.variableValue = leftNode.variableValue < rightNode.variableValue
+        elif operation.type == ASTTypes.AND_OP:
+            leftValue = leftNode.variableValue
+            rightValue = rightNode.variableValue
+            # This is done to perform operations like "0 and True"
+            # in Python and return bool.
+            if leftValue == 0:
+                leftValue = False
+            if rightValue == 0:
+                rightValue = False
+            operation.variableType = VariableTypes.BOOL
+            operation.variableValue = leftValue and rightValue
+        elif operation.type == ASTTypes.OR_OP:
+            leftValue = leftNode.variableValue
+            rightValue = rightNode.variableValue
+            # This is done to perform operations like "0 and True"
+            # in Python and return bool.
+            if leftValue == 0:
+                leftValue = False
+            if rightValue == 0:
+                rightValue = False
+            operation.variableType = VariableTypes.BOOL
+            operation.variableValue = leftValue or rightValue
 
     def _checkArithmeticOperation(self, leftNode: ASTNode, rightNode: ASTNode, operation: ASTTypes, lineno: int):
         numTypes = [VariableTypes.INT, VariableTypes.FLOAT]
@@ -231,6 +259,20 @@ class SemanticAnalyzer:
             if areBoolsOrStrs:
                 self._addError(
                     f'Cannot do "{leftValue}" < "{rightValue}". Mismatching types', lineno)
+
+    def _checkBoolOperator(self, leftNode: ASTNode, rightNode: ASTNode, operation: ASTTypes, lineno: int):
+        numTypes = [VariableTypes.INT, VariableTypes.FLOAT]
+        leftType = leftNode.variableType
+        rightType = rightNode.variableType
+        leftValue = leftNode.variableValue
+        rightValue = rightNode.variableValue
+        areNumAndBools = (leftType in numTypes and rightType == VariableTypes.BOOL) or (
+            rightType in numTypes and leftType == VariableTypes.BOOL)
+        bothBools = (leftType == VariableTypes.BOOL and rightType ==
+                     VariableTypes.BOOL)
+        if not (areNumAndBools or bothBools):
+            self._addError(
+                f'Cannot perform boolean operation on "{leftValue}" and "{rightValue}"', lineno)
 
     def _searchVariableValue(self, name: str, symbolTable: SymbolTable, lineno: int) -> Variable:
         currentSymbolTable = symbolTable
