@@ -68,6 +68,7 @@ class ASTTypes(Enum):
     ELSE = 24
     IF_STATEMENT = 25
     WHILE_STATEMENT = 26
+    FOR_STATEMENT = 27
     REASSIGN = 28
     INT_TO_FLOAT = 29
     SUM = 50
@@ -145,18 +146,32 @@ class Parser:
     def p_block_statement(self, p):
         '''block_statement : if_statement
                             | while_statement
+                            | for_statement
         '''
         p[0] = p[1]
+
+    def p_for_statement(self, p):
+        '''for_statement : FOR "(" statement SENTENCE_END declaration SENTENCE_END statement ")" "{" program "}" '''
+        if p[3].type != ASTTypes.INT_DCL:
+            self._addError(
+                'Invalid for loop variable initialization', p.lineno(2))
+        self._checkIsValidBoolCondition(p[5].type, p.lineno(2))
+        if p[7].type != ASTTypes.REASSIGN:
+            self._addError('Invalid for loop updation', p.lineno(2))
+        p[0] = ASTNode(ASTTypes.FOR_STATEMENT, children=[
+                       p[3], p[5], p[7], p[10]], lineno=p.lineno(1))
 
     def p_while_statement(self, p):
         '''while_statement : WHILE "(" declaration ")" "{" program "}" '''
         self._checkIsValidBoolCondition(p[3].type, p.lineno(2))
-        p[0] = ASTNode(ASTTypes.WHILE_STATEMENT, children=[p[3], p[6]])
+        p[0] = ASTNode(ASTTypes.WHILE_STATEMENT, children=[
+                       p[3], p[6]], lineno=p.lineno(1))
 
     def p_if_statement(self, p):
         '''if_statement : IF "(" declaration ")" "{" program "}" elif else '''
         self._checkIsValidBoolCondition(p[3].type, p.lineno(2))
-        ifNode = ASTNode(ASTTypes.IF, children=[p[3], p[6]])
+        ifNode = ASTNode(ASTTypes.IF, children=[
+                         p[3], p[6]], lineno=p.lineno(1))
         children = [ifNode]
         if (p[8] != None):
             children.append(p[8])
@@ -176,7 +191,7 @@ class Parser:
             if (p[8] != None):
                 children.append(p[8])
             p[0] = ASTNode(
-                ASTTypes.ELIF, children=children)
+                ASTTypes.ELIF, children=children, lineno=p.lineno(1))
 
     def p_block_else(self, p):
         '''else : ELSE "{" program "}"
@@ -186,7 +201,8 @@ class Parser:
             children = []
             if (p[3] != None):
                 children.append(p[3])
-            p[0] = ASTNode(ASTTypes.ELSE, children=children)
+            p[0] = ASTNode(ASTTypes.ELSE, children=children,
+                           lineno=p.lineno(1))
 
     def p_statement_declare_int(self, p):
         '''statement : INTDCL NAME assignment '''
@@ -326,7 +342,11 @@ class Parser:
                 f'Unexpected symbol "{p.value}", at line {p.lineno}', p.lineno)
         self._addError('Unexpected end of file reached')
 
-    def _produceSymbolTable(self, root: ASTNode, currentTable: SymbolTable):
+    def _produceSymbolTable(self, root: ASTNode, currentTable: SymbolTable, pending: List[ASTNode] = None):
+        if root.type == ASTTypes.FOR_STATEMENT:
+            # Save for future processing.
+            self._produceSymbolTable(root.children[3], currentTable, root.children[:3])
+            return
         if root.type == ASTTypes.BLOCK:
             # Global variables
             if currentTable == None:
@@ -335,9 +355,13 @@ class Parser:
                 root.symbolTable = SymbolTable({}, currentTable)
                 root.symbolTable.parent.children.append(root.symbolTable)
             currentTable = root.symbolTable
+            if pending != None:
+                for node in pending:
+                    self._produceSymbolTable(node, currentTable, None)
+                pending = None
         elif root.type in [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL, ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]:
             for c in root.children:
-                self._produceSymbolTable(c, currentTable)
+                self._produceSymbolTable(c, currentTable, pending)
             self._addToNames(currentTable, root.variableName,
                              root.variableType, root.lineno)
             return
@@ -345,7 +369,7 @@ class Parser:
             self._checkIfVariableExist(
                 currentTable, root.variableName, root.lineno)
         for c in root.children:
-            self._produceSymbolTable(c, currentTable)
+            self._produceSymbolTable(c, currentTable, pending)
 
     def _addToNames(self, symbolTable: SymbolTable, name: str, type: VariableTypes, lineno: int):
         currentSymbolTable = symbolTable
@@ -366,9 +390,10 @@ class Parser:
 
     def _checkIsValidBoolCondition(self, nodeType: ASTTypes, lineno: int):
         compareTypes = [ASTTypes.CMP_EQUAL, ASTTypes.CMP_NOT_EQUAL, ASTTypes.CMP_GREATER_EQUAL,
-                    ASTTypes.CMP_LESS_EQUAL, ASTTypes.CMP_GREATER, ASTTypes.CMP_LESS]
+                        ASTTypes.CMP_LESS_EQUAL, ASTTypes.CMP_GREATER, ASTTypes.CMP_LESS]
         boolOpTypes = [ASTTypes.AND_OP, ASTTypes.OR_OP]
-        validOptions = [ASTTypes.BOOL_FALSE, ASTTypes.BOOL_TRUE, ASTTypes.VARIABLE]
+        validOptions = [ASTTypes.BOOL_FALSE,
+                        ASTTypes.BOOL_TRUE, ASTTypes.VARIABLE]
         validOptions.extend(compareTypes)
         validOptions.extend(boolOpTypes)
         if nodeType not in validOptions:

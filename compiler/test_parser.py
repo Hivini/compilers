@@ -285,6 +285,20 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 2)
         self.assertEqual(tree.children[0].children[1].type, ASTTypes.BLOCK)
 
+    def testForStatement(self):
+        prog = '''for (int i = 0; i < 2; i = i + 1) {
+            int forStatement = 5;
+        }
+        '''
+        tree = self.instance.parseProgram(prog)
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.FOR_STATEMENT)
+        self.assertEqual(len(tree.children[0].children), 4)
+        self.assertEqual(tree.children[0].children[0].type, ASTTypes.INT_DCL)
+        self.assertEqual(tree.children[0].children[1].type, ASTTypes.CMP_LESS)
+        self.assertEqual(tree.children[0].children[2].type, ASTTypes.REASSIGN)
+        self.assertEqual(tree.children[0].children[3].type, ASTTypes.BLOCK)
+
     def testNoEndSentence(self):
         code = '''int noEnd = 2;
         print(noEnd)'''
@@ -313,4 +327,25 @@ class TestParser(unittest.TestCase):
         elif(1 + 1) {
             int insideInvalidElifC = 5;  
         }'''
+        self.assertRaises(ParserError, self.instance.parseProgram, code)
+
+    def testInvalidForInitialization(self):
+        code = '''for (1 + 1; i < 2; i = i + 1) {
+            int forStatement = 5;
+        }
+        '''
+        self.assertRaises(ParserError, self.instance.parseProgram, code)
+
+    def testInvalidForCondition(self):
+        code = '''for (int i = 0; i + 1; i = i + 1) {
+            int forStatement = 5;
+        }
+        '''
+        self.assertRaises(ParserError, self.instance.parseProgram, code)
+
+    def testInvalidForUpdation(self):
+        code = '''for (int i = 0; i < 1; i + 1) {
+            int forStatement = 5;
+        }
+        '''
         self.assertRaises(ParserError, self.instance.parseProgram, code)
