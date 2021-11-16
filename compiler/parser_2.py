@@ -67,7 +67,7 @@ class ASTTypes(Enum):
 class ASTNode:
     def __init__(self, type: ASTTypes, children: List[any] = None,
                  variableType: VariableTypes = None, variableValue: any = None,
-                 variableName: str = None, symbolTable = None, lineno: int = None):
+                 variableName: str = None, symbolTable=None, lineno: int = None):
         self.type = type
         if children:
             self.children = children
@@ -105,7 +105,6 @@ class Parser:
         self.proglines = proglines
         self.parser = yacc.yacc(module=self)
 
-
     def _addError(self, error: str, lineNumber: int = None):
         if lineNumber:
             error = f'{error}:\n\t{lineNumber})\t{self.proglines[lineNumber-1]}'
@@ -131,26 +130,30 @@ class Parser:
     def p_statement_declare_int(self, p):
         '''statement : INTDCL NAME assignment
         '''
-        p[0] = ASTNode(ASTTypes.INT_DCL, children=[p[3]], variableName=p[2], lineno=p.lineno(2))
+        p[0] = ASTNode(ASTTypes.INT_DCL, children=[p[3]],
+                       variableName=p[2], lineno=p.lineno(2))
 
     def p_statement_declare_float(self, p):
         '''statement : FLOATDCL NAME assignment
         '''
-        p[0] = ASTNode(ASTTypes.FLOAT_DCL, children=[p[3]], variableName=p[2], lineno=p.lineno(2))
+        p[0] = ASTNode(ASTTypes.FLOAT_DCL, children=[p[3]],
+                       variableName=p[2], lineno=p.lineno(2))
 
     def p_statement_declare_string(self, p):
         '''statement : STRING_DCL NAME assignment
         '''
-        p[0] = ASTNode(ASTTypes.STRING_DCL, children=[p[3]], variableName=p[2], lineno=p.lineno(2))
+        p[0] = ASTNode(ASTTypes.STRING_DCL, children=[p[3]],
+                       variableName=p[2], lineno=p.lineno(2))
 
     def p_statement_declare_boolean(self, p):
         '''statement : BOOL_DCL NAME assignment
         '''
-        p[0] = ASTNode(ASTTypes.BOOL_DCL, children=[p[3]], variableName=p[2], lineno=p.lineno(2))
+        p[0] = ASTNode(ASTTypes.BOOL_DCL, children=[p[3]],
+                       variableName=p[2], lineno=p.lineno(2))
 
     def p_assignment(self, p):
         '''assignment : '=' declaration '''
-        p[0] = ASTNode(ASTTypes.ASSIGN, children=[p[2]])
+        p[0] = ASTNode(ASTTypes.ASSIGN, children=[p[2]], lineno=p.lineno(1))
 
     def p_expression_print(self, p):
         '''statement : PRINT '(' declaration ')' '''
@@ -164,17 +167,20 @@ class Parser:
                     | declaration '^' declaration
         '''
         if p[2] == '+':
-            p[0] = ASTNode(ASTTypes.SUM, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.SUM, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '-':
             p[0] = ASTNode(
-                ASTTypes.SUBSTRACT, children=[p[1], p[3]])
+                ASTTypes.SUBSTRACT, children=[p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '*':
             p[0] = ASTNode(
-                ASTTypes.MULTIPLICATION, children=[p[1], p[3]])
+                ASTTypes.MULTIPLICATION, children=[p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '/':
-            p[0] = ASTNode(ASTTypes.DIVISION, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.DIVISION, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '^':
-            p[0] = ASTNode(ASTTypes.EXPONENT, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.EXPONENT, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
 
     def p_expression_cmpop(self, p):
         '''declaration : declaration EQUALS declaration
@@ -185,26 +191,34 @@ class Parser:
                     | declaration '<' declaration
         '''
         if p[2] == '==':
-            p[0] = ASTNode(ASTTypes.CMP_EQUAL, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.CMP_EQUAL, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '!=':
-            p[0] = ASTNode(ASTTypes.CMP_NOT_EQUAL, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.CMP_NOT_EQUAL, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '>=':
-            p[0] = ASTNode(ASTTypes.CMP_GREATER_EQUAL, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.CMP_GREATER_EQUAL, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '<=':
-            p[0] = ASTNode(ASTTypes.CMP_LESS_EQUAL, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.CMP_LESS_EQUAL, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '>':
-            p[0] = ASTNode(ASTTypes.CMP_GREATER, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.CMP_GREATER, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == '<':
-            p[0] = ASTNode(ASTTypes.CMP_LESS, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.CMP_LESS, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
 
     def p_expression_boolop(self, p):
         '''declaration : declaration AND_OP declaration
                     | declaration OR_OP declaration
         '''
         if p[2] == 'and':
-            p[0] = ASTNode(ASTTypes.AND_OP, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.AND_OP, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
         elif p[2] == 'or':
-            p[0] = ASTNode(ASTTypes.OR_OP, children=[p[1], p[3]])
+            p[0] = ASTNode(ASTTypes.OR_OP, children=[
+                           p[1], p[3]], lineno=p.lineno(2))
 
     def p_expression_group(self, p):
         '''declaration : '(' declaration ')' '''
@@ -212,36 +226,37 @@ class Parser:
 
     def p_expression_uminus(self, p):
         '''declaration : - declaration %prec UMINUS'''
-        p[0] = ASTNode(ASTTypes.UMINUS, children=[p[2]])
+        p[0] = ASTNode(ASTTypes.UMINUS, children=[p[2]], lineno=p.lineno(1))
 
     def p_expression_intnum(self, p):
         '''declaration : INTNUM '''
         p[0] = ASTNode(
-            ASTTypes.INT, variableType=VariableTypes.INT, variableValue=int(p[1]))
+            ASTTypes.INT, variableType=VariableTypes.INT, variableValue=int(p[1]), lineno=p.lineno(1))
 
     def p_expression_floatnum(self, p):
         '''declaration : FLOATNUM '''
         p[0] = ASTNode(
-            ASTTypes.FLOAT, variableType=VariableTypes.FLOAT, variableValue=float(p[1]))
+            ASTTypes.FLOAT, variableType=VariableTypes.FLOAT, variableValue=float(p[1]), lineno=p.lineno(1))
 
     def p_expression_bool_true(self, p):
         '''declaration : BOOL_TRUE '''
         p[0] = ASTNode(ASTTypes.BOOL_TRUE,
-                       variableType=VariableTypes.BOOL, variableValue=True)
+                       variableType=VariableTypes.BOOL, variableValue=True, lineno=p.lineno(1))
 
     def p_expression_bool_false(self, p):
         '''declaration : BOOL_FALSE '''
         p[0] = ASTNode(ASTTypes.BOOL_FALSE,
-                       variableType=VariableTypes.BOOL, variableValue=False)
+                       variableType=VariableTypes.BOOL, variableValue=False, lineno=p.lineno(1))
 
     def p_expression_string(self, p):
         '''declaration : STRING '''
         p[0] = ASTNode(ASTTypes.STRING,
-                       variableType=VariableTypes.STRING, variableValue=p[1].replace('"', ''))
+                       variableType=VariableTypes.STRING, variableValue=p[1].replace('"', ''), lineno=p.lineno(1))
 
     def p_expression_name(self, p):
         '''declaration : NAME '''
-        p[0] = ASTNode(ASTTypes.VARIABLE, variableName=p[1], lineno=p.lineno(1))
+        p[0] = ASTNode(ASTTypes.VARIABLE, variableName=p[1],
+                       lineno=p.lineno(1))
 
     def p_error(self, p):
         if p:
