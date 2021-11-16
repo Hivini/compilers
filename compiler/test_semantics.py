@@ -99,6 +99,14 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].variableValue, 4.0)
 
+    def testExponent(self):
+        tree = self._prepareSemantics('float div = 4 ^ 2 + 2;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.FLOAT_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.FLOAT)
+        self.assertEqual(len(tree.children[0].children), 1)
+        self.assertEqual(tree.children[0].variableValue, 18)
+
     def testInvalidIntType(self):
         code = '''int invalidinttype = true;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
@@ -150,3 +158,12 @@ class TestParser(unittest.TestCase):
     def testAssignIntFloatDivision(self):
         code = '''int invalidsumtype = 1 / 0.23;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidExponentBool(self):
+        code = '''int invalidsumtype = 1 ^ true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidExponentString(self):
+        code = '''int invalidsumtype = 1 ^ "true";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+

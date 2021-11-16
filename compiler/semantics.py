@@ -115,13 +115,12 @@ class SemanticAnalyzer:
             else:
                 val = int(val)
             operation.variableValue = val
-        # elif op == '^':
-        #     if leftT == VariableTypes.FLOAT or rightT == VariableTypes.FLOAT or rightV < 0:
-        #         p[0] = ASTNode(ASTTypes.EXPONENT, variableType=VariableTypes.FLOAT, variableValue=pow(
-        #             leftV, rightV), children=[p[1], p[3]])
-        #     else:
-        #         p[0] = ASTNode(ASTTypes.EXPONENT, variableType=VariableTypes.INT, variableValue=pow(
-        #             leftV, rightV), children=[p[1], p[3]])
+        elif operation.type == ASTTypes.EXPONENT:
+            operation.variableType = VariableTypes.INT
+            if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT or rightNode.variableValue < 0:
+                operation.variableType = VariableTypes.FLOAT
+            operation.variableValue = pow(
+                leftNode.variableValue, rightNode.variableValue)
 
     def _checkArithmeticOperation(self, leftNode: ASTNode, rightNode: ASTNode, operation: ASTTypes, lineno: int):
         numTypes = [VariableTypes.INT, VariableTypes.FLOAT]
@@ -149,10 +148,10 @@ class SemanticAnalyzer:
             elif rightValue == 0:
                 self._addError(
                     f'{leftValue} / {rightValue} is invalid. Cannot perform division by zero', lineno)
-        # elif operation == '^':
-        #     if not(bothAreNums):
-        #         self._addError(
-        #             f'Cannot get the exponent of "{leftValue}" ^ "{rightValue}".')
+        elif operation == ASTTypes.EXPONENT:
+            if not(bothAreNums):
+                self._addError(
+                    f'Cannot get the exponent of "{leftValue}" ^ "{rightValue}"', lineno)
 
     def _addError(self, error: str, lineNumber: int = None):
         if lineNumber:
