@@ -333,8 +333,14 @@ class Parser:
                 root.symbolTable.parent.children.append(root.symbolTable)
             currentTable = root.symbolTable
         elif root.type in [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL, ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]:
+            for c in root.children:
+                self._produceSymbolTable(c, currentTable)
             self._addToNames(currentTable, root.variableName,
                              root.variableType, root.lineno)
+            return
+        elif root.type in [ASTTypes.VARIABLE, ASTTypes.REASSIGN]:
+            self._checkIfVariableExist(
+                currentTable, root.variableName, root.lineno)
         for c in root.children:
             self._produceSymbolTable(c, currentTable)
 
@@ -346,6 +352,14 @@ class Parser:
                     f'Variable name "{name}" already exists', lineno)
             currentSymbolTable = currentSymbolTable.parent
         symbolTable.table[name] = Variable(type, lineno)
+
+    def _checkIfVariableExist(self, symbolTable: SymbolTable, name: str, lineno: int):
+        currentSymbolTable = symbolTable
+        while currentSymbolTable != None:
+            if name in currentSymbolTable.table:
+                return
+            currentSymbolTable = currentSymbolTable.parent
+        self._addError(f'Variable name "{name}" does not exist', lineno)
 
     def parseProgram(self, prog):
         root = self.parser.parse(prog)

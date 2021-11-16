@@ -267,13 +267,16 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.IF)
         self.assertEqual(tree.children[0].children[1].type, ASTTypes.ELIF)
         self.assertEqual(tree.children[0].children[2].type, ASTTypes.ELSE)
-        self.assertEqual(tree.children[0].children[0].children[1].type, ASTTypes.BLOCK)
-        self.assertEqual(tree.children[0].children[1].children[1].type, ASTTypes.BLOCK)
-        self.assertEqual(tree.children[0].children[2].children[0].type, ASTTypes.BLOCK)
+        self.assertEqual(
+            tree.children[0].children[0].children[1].type, ASTTypes.BLOCK)
+        self.assertEqual(
+            tree.children[0].children[1].children[1].type, ASTTypes.BLOCK)
+        self.assertEqual(
+            tree.children[0].children[2].children[0].type, ASTTypes.BLOCK)
 
     def testWhileStatement(self):
         prog = '''while (true) {
-            int a = 5;
+            int whileStatement = 5;
         }
         '''
         tree = self.instance.parseProgram(prog)
@@ -286,3 +289,7 @@ class TestParser(unittest.TestCase):
         code = '''int noEnd = 2;
         print(noEnd)'''
         self.assertRaises(ParserError, self.instance.parseProgram, code)
+
+    def testInvalidVariable(self):
+        self.assertRaises(ParserError, self.instance.parseProgram,
+                          'int invalidNonExistent = 1 + invalidNonExistent;')
