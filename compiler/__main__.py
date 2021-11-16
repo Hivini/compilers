@@ -4,7 +4,7 @@ import os
 from compiler.lexer import Lexer
 
 from compiler.logger import Logger
-from compiler.parser_2 import Parser, ParserError
+from compiler.parser import Parser, ParserError
 
 
 def PrintAST(logger, current, depth):

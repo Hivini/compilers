@@ -1,6 +1,6 @@
 import unittest
 
-from compiler.parser_2 import ASTTypes, Parser, ParserError, VariableTypes
+from compiler.parser import ASTTypes, Parser, ParserError, VariableTypes
 
 
 class TestParser(unittest.TestCase):
