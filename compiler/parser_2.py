@@ -1,4 +1,3 @@
-# TODO(hivini): Add validation for while, if, elif conditions
 import ply.yacc as yacc
 
 from compiler.lexer import Lexer
