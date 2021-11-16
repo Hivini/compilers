@@ -127,6 +127,54 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].variableValue, -21)
 
+    def testCmpEqual(self):
+        tree = self._prepareSemantics(
+            'bool cmpequal = true == "true";')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, False)
+
+    def testCmpNotEqual(self):
+        tree = self._prepareSemantics(
+            'bool cmpnotequal = 4 != 5;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, True)
+
+    def testCmpGreaterEqual(self):
+        tree = self._prepareSemantics(
+            'bool cmpgreatere = 4 >= 5;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, False)
+
+    def testCmpLessEqual(self):
+        tree = self._prepareSemantics(
+            'bool lesse = 4 <= 5;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, True)
+
+    def testCmpGreater(self):
+        tree = self._prepareSemantics(
+            'bool less = 5 > 5;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, False)
+
+    def testCmpLess(self):
+        tree = self._prepareSemantics(
+            'bool less = 5 < 5;')
+        self.assertEqual(len(tree.children), 1)
+        self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
+        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableValue, False)
+
     def testInvalidIntType(self):
         code = '''int invalidinttype = true;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)
@@ -193,4 +241,44 @@ class TestParser(unittest.TestCase):
 
     def testInvalidUminusString(self):
         code = '''int invalidsumtype = -"true";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPEQ(self):
+        code = '''bool invcmpeq = 2 == "2";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPNEQ(self):
+        code = '''bool invcmpneq = 2 != "2";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPGEQString(self):
+        code = '''bool invcmpgeqs = 2 >= "2";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPGEQBool(self):
+        code = '''bool invcmpgeqb = 2 >= true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPLEQString(self):
+        code = '''bool invcmpleqs = 2 <= "true";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPLEQBool(self):
+        code = '''bool invcmpleqb = 2 <= true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPGString(self):
+        code = '''bool invcmpgs = 2 > "2";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPGBool(self):
+        code = '''bool invcmpgb = 2 > true;'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPLString(self):
+        code = '''bool invcmpls = 2 < "true";'''
+        self.assertRaises(SemanticError, self._prepareSemantics, code)
+
+    def testInvalidCMPLBool(self):
+        code = '''bool invcmplb = 2 < true;'''
         self.assertRaises(SemanticError, self._prepareSemantics, code)

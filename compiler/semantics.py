@@ -12,6 +12,8 @@ class SemanticAnalyzer:
                         ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]
     algebraOp = [ASTTypes.SUM, ASTTypes.SUBSTRACT,
                  ASTTypes.MULTIPLICATION, ASTTypes.DIVISION, ASTTypes.EXPONENT, ASTTypes.UMINUS]
+    boolAlgebraOp = [ASTTypes.CMP_EQUAL, ASTTypes.CMP_NOT_EQUAL, ASTTypes.CMP_GREATER_EQUAL,
+                     ASTTypes.CMP_LESS_EQUAL, ASTTypes.CMP_GREATER, ASTTypes.CMP_LESS]
 
     def __init__(self, root: ASTNode, progLines: List[str]) -> None:
         self.root = root
@@ -68,7 +70,7 @@ class SemanticAnalyzer:
         return node
 
     def _updateAlgebraNodeValues(self, operation: ASTNode, symbolTable: SymbolTable):
-        if operation.type not in self.algebraOp:
+        if not (operation.type in self.algebraOp or operation.type in self.boolAlgebraOp):
             return
         elif operation.type == ASTTypes.UMINUS:
             uminusnode = operation.children[0]
@@ -98,8 +100,12 @@ class SemanticAnalyzer:
             rightNode.variableType = resultVariable.type
             rightNode.variableValue = resultVariable.value
 
-        self._checkArithmeticOperation(
-            leftNode, rightNode, operation.type, operation.lineno)
+        if operation.type in self.algebraOp:
+            self._checkArithmeticOperation(
+                leftNode, rightNode, operation.type, operation.lineno)
+        elif operation.type in self.boolAlgebraOp:
+            self._checkComparisonOperation(
+                leftNode, rightNode, operation.type, operation.lineno)
         leftType = leftNode.variableType
         rightType = rightNode.variableType
         # Do the operation in the values
@@ -142,6 +148,24 @@ class SemanticAnalyzer:
                 operation.variableType = VariableTypes.FLOAT
             operation.variableValue = pow(
                 leftNode.variableValue, rightNode.variableValue)
+        elif operation.type == ASTTypes.CMP_EQUAL:
+            operation.variableType = VariableTypes.BOOL
+            operation.variableValue = leftNode.variableValue == rightNode.variableValue
+        elif operation.type == ASTTypes.CMP_NOT_EQUAL:
+            operation.variableType = VariableTypes.BOOL
+            operation.variableValue = leftNode.variableValue != rightNode.variableValue
+        elif operation.type == ASTTypes.CMP_GREATER_EQUAL:
+            operation.variableType = VariableTypes.BOOL
+            operation.variableValue = leftNode.variableValue >= rightNode.variableValue
+        elif operation.type == ASTTypes.CMP_LESS_EQUAL:
+            operation.variableType = VariableTypes.BOOL
+            operation.variableValue = leftNode.variableValue <= rightNode.variableValue
+        elif operation.type == ASTTypes.CMP_GREATER:
+            operation.variableType = VariableTypes.BOOL
+            operation.variableValue = leftNode.variableValue > rightNode.variableValue
+        elif operation.type == ASTTypes.CMP_LESS:
+            operation.variableType = VariableTypes.BOOL
+            operation.variableValue = leftNode.variableValue < rightNode.variableValue
 
     def _checkArithmeticOperation(self, leftNode: ASTNode, rightNode: ASTNode, operation: ASTTypes, lineno: int):
         numTypes = [VariableTypes.INT, VariableTypes.FLOAT]
@@ -173,6 +197,40 @@ class SemanticAnalyzer:
             if not(bothAreNums):
                 self._addError(
                     f'Cannot get the exponent of "{leftValue}" ^ "{rightValue}"', lineno)
+
+    def _checkComparisonOperation(self, leftNode: ASTNode, rightNode: ASTNode, operation: ASTTypes, lineno: int):
+        numTypes = [VariableTypes.INT, VariableTypes.FLOAT]
+        leftType = leftNode.variableType
+        rightType = rightNode.variableType
+        leftValue = leftNode.variableValue
+        rightValue = rightNode.variableValue
+        areNumAndStrings = (leftType in numTypes and rightType == VariableTypes.STRING) or (
+            rightType in numTypes and leftType == VariableTypes.STRING)
+        areBoolsOrStrs = leftType == VariableTypes.BOOL or rightType == VariableTypes.BOOL or leftType == VariableTypes.STRING or rightType == VariableTypes.STRING
+        if operation == ASTTypes.CMP_EQUAL:
+            if areNumAndStrings:
+                self._addError(
+                    f'Cannot do "{leftValue}" == "{rightValue}". Mismatching types.', lineno)
+        elif operation == ASTTypes.CMP_NOT_EQUAL:
+            if areNumAndStrings:
+                self._addError(
+                    f'Cannot do "{leftValue}" != "{rightValue}". Mismatching types', lineno)
+        elif operation == ASTTypes.CMP_GREATER_EQUAL:
+            if areBoolsOrStrs:
+                self._addError(
+                    f'Cannot do "{leftValue}" >= "{rightValue}". Mismatching types', lineno)
+        elif operation == ASTTypes.CMP_LESS_EQUAL:
+            if areBoolsOrStrs:
+                self._addError(
+                    f'Cannot do "{leftValue}" <= "{rightValue}". Mismatching types', lineno)
+        elif operation == ASTTypes.CMP_GREATER:
+            if areBoolsOrStrs:
+                self._addError(
+                    f'Cannot do "{leftValue}" > "{rightValue}". Mismatching types', lineno)
+        elif operation == ASTTypes.CMP_LESS:
+            if areBoolsOrStrs:
+                self._addError(
+                    f'Cannot do "{leftValue}" < "{rightValue}". Mismatching types', lineno)
 
     def _searchVariableValue(self, name: str, symbolTable: SymbolTable, lineno: int) -> Variable:
         currentSymbolTable = symbolTable
