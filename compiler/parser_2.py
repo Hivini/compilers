@@ -66,7 +66,8 @@ class ASTTypes(Enum):
     ELIF = 23
     ELSE = 24
     IF_STATEMENT = 25
-    INT_TO_FLOAT = 26
+    WHILE_STATEMENT = 26
+    INT_TO_FLOAT = 28
     SUM = 50
     SUBSTRACT = 51
     MULTIPLICATION = 52
@@ -140,8 +141,14 @@ class Parser:
         p[0] = p[1]
 
     def p_block_statement(self, p):
-        '''block_statement : if_statement '''
+        '''block_statement : if_statement
+                            | while_statement
+        '''
         p[0] = p[1]
+
+    def p_while_statement(self, p):
+        '''while_statement : WHILE "(" declaration ")" "{" program "}" '''
+        p[0] = ASTNode(ASTTypes.WHILE_STATEMENT, children=[p[3], p[6]])
 
     def p_if_statement(self, p):
         '''if_statement : IF "(" declaration ")" "{" program "}" elif else '''
