@@ -4,20 +4,19 @@ import os
 from compiler.lexer import Lexer
 
 from compiler.logger import Logger
-from compiler.parser_2 import Parser, ParserError
+from compiler.parser import Parser, ParserError
+from compiler.semantics import SemanticAnalyzer, SemanticError
 
 
 def PrintAST(logger, current, depth):
     spaces = '\t'*depth
     logger.LogDebug(f'{spaces}-{current.type.name}')
-    if current.lineno != None:
-        logger.LogDebug(f'{spaces}| line no. {current.lineno}')
     if current.variableType != None:
-        logger.LogDebug(f'{spaces}| {current.variableType}')
+        logger.LogDebug(f'{spaces}| Type: {current.variableType}')
     if current.variableName != None:
-        logger.LogDebug(f'{spaces}| {current.variableName}')
+        logger.LogDebug(f'{spaces}| Name: {current.variableName}')
     if current.variableValue != None:
-        logger.LogDebug(f'{spaces}| {current.variableValue}')
+        logger.LogDebug(f'{spaces}| Value: {current.variableValue}')
     for c in current.children:
         PrintAST(logger, c, depth+1)
 
@@ -72,12 +71,20 @@ def Run():
         root = parserInstance.parseProgram(program)
         if (args.verbose):
             PrintAST(logger, root, 0)
-        if (args.verbose):
             logger.LogDebug('Symbol Tables:')
+            PrintSymbolTable(logger, parserInstance.symbolTable, 0)
+        semanticInstance = SemanticAnalyzer(root, lines)
+        semanticInstance.checkSemantics()
+        if (args.verbose):
+            logger.LogDebug('AST after semantics:')
+            PrintAST(logger, root, 0)
+            logger.LogDebug('Symbol Tables after semantics:')
             PrintSymbolTable(logger, parserInstance.symbolTable, 0)
         logger.LogSuccess('Successfully compiled!')
     except ParserError:
         logger.LogError(parserInstance.first_error)
+    except SemanticError:
+        logger.LogError(semanticInstance.error)
 
 
 if __name__ == '__main__':
