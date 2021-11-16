@@ -7,373 +7,238 @@ class TestParser(unittest.TestCase):
 
     def setUp(self):
         self.instance = Parser(['test', 'line', 'this'])
-        self.parser = self.instance.createParser()
 
     def testPrintExp(self):
         code = '''int printexp = 2;
         print(printexp);
         '''
-        tree = self.parser.parse(code)
+        tree = self.instance.parseProgram(code)
         self.assertEqual(len(tree.children), 2)
         self.assertEqual(tree.children[1].type, ASTTypes.PRINT)
         self.assertEqual(len(tree.children[1].children), 1)
         self.assertEqual(tree.children[1].children[0].type, ASTTypes.VARIABLE)
-        self.assertEqual(tree.children[1].children[0].variableValue, 2)
 
     def testAssignInt(self):
-        tree = self.parser.parse('int assignInt = 2;')
+        tree = self.instance.parseProgram('int assignInt = 2;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
         self.assertEqual(tree.children[0].variableName, 'assignInt')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 2)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.INT)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].variableType, VariableTypes.INT)
 
     def testAssignFloat(self):
-        tree = self.parser.parse('float assignFloat = 2.2;')
+        tree = self.instance.parseProgram('float assignFloat = 2.2;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.FLOAT_DCL)
         self.assertEqual(tree.children[0].variableName, 'assignFloat')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 2.2)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.FLOAT)
-
-    def testAssignFloatWithInt(self):
-        tree = self.parser.parse('float floatasInt = 4;')
-        self.assertEqual(len(tree.children), 1)
-        self.assertEqual(tree.children[0].type, ASTTypes.FLOAT_DCL)
-        self.assertEqual(tree.children[0].variableName, 'floatasInt')
-        self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 4)
         self.assertEqual(
-            tree.children[0].children[0].children[0].type, ASTTypes.INT_TO_FLOAT)
+            tree.children[0].children[0].children[0].variableType, VariableTypes.FLOAT)
 
     def testAssignString(self):
-        tree = self.parser.parse('string assignString = "hola";')
+        tree = self.instance.parseProgram('string assignString = "hola";')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.STRING_DCL)
         self.assertEqual(tree.children[0].variableName, 'assignString')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 'hola')
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.STRING)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].variableType, VariableTypes.STRING)
 
     def testAssignBooleanTrue(self):
-        tree = self.parser.parse('bool assignBool = true;')
+        tree = self.instance.parseProgram('bool assignBool = true;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'assignBool')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, True)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.BOOL_TRUE)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].variableType, VariableTypes.BOOL)
 
     def testAssignBooleanFalse(self):
-        tree = self.parser.parse('bool assignBoolF = false;')
+        tree = self.instance.parseProgram('bool assignBoolF = false;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'assignBoolF')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, False)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.BOOL_FALSE)
+        self.assertEqual(
+            tree.children[0].children[0].children[0].variableType, VariableTypes.BOOL)
 
     def testAssignSum(self):
-        tree = self.parser.parse('int sum = 2 + 3;')
+        tree = self.instance.parseProgram('int sum = 2 + 3;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
         self.assertEqual(tree.children[0].variableName, 'sum')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 5)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.SUM)
         self.assertEqual(
             len(tree.children[0].children[0].children[0].children), 2)
 
     def testAssignSubstract(self):
-        tree = self.parser.parse('int substract = 2 - 3;')
+        tree = self.instance.parseProgram('int substract = 2 - 3;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
         self.assertEqual(tree.children[0].variableName, 'substract')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, -1)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.SUBSTRACT)
         self.assertEqual(
             len(tree.children[0].children[0].children[0].children), 2)
 
     def testAssignMultiplication(self):
-        tree = self.parser.parse('int multiplication = 2 * 3;')
+        tree = self.instance.parseProgram('int multiplication = 2 * 3;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
         self.assertEqual(tree.children[0].variableName, 'multiplication')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 6)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.MULTIPLICATION)
         self.assertEqual(
             len(tree.children[0].children[0].children[0].children), 2)
 
     def testAssignDivision(self):
-        tree = self.parser.parse('int div = 4/2;')
+        tree = self.instance.parseProgram('int div = 4/2;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
         self.assertEqual(tree.children[0].variableName, 'div')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 2)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.DIVISION)
         self.assertEqual(
             len(tree.children[0].children[0].children[0].children), 2)
 
     def testAssignExponent(self):
-        tree = self.parser.parse('int exp = 2^6;')
+        tree = self.instance.parseProgram('int exp = 2^6;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
         self.assertEqual(tree.children[0].variableName, 'exp')
         self.assertEqual(len(tree.children[0].children), 1)
         self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 64)
         self.assertEqual(
             tree.children[0].children[0].children[0].type, ASTTypes.EXPONENT)
         self.assertEqual(
             len(tree.children[0].children[0].children[0].children), 2)
 
     def testUminus(self):
-        tree = self.parser.parse('int uminus = -((3 + 3) / 2 * (2+2));')
+        tree = self.instance.parseProgram(
+            'int uminus = -((3 + 3) / 2 * (2+2));')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
-        self.assertEqual(tree.children[0].variableType, VariableTypes.INT)
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, -12)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.UMINUS)
 
     def testCmpEqual(self):
-        tree = self.parser.parse('bool cmpequal = 1 == 1;')
+        tree = self.instance.parseProgram('bool cmpequal = 1 == 1;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'cmpequal')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, True)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.CMP_EQUAL)
 
     def testCmpNotEqual(self):
-        tree = self.parser.parse('bool cmpnotequal = 1 != 2;')
+        tree = self.instance.parseProgram('bool cmpnotequal = 1 != 2;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'cmpnotequal')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, True)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.CMP_NOT_EQUAL)
 
     def testCmpGreaterEqual(self):
-        tree = self.parser.parse('bool cmpgreaterequal = 2 >= 2;')
+        tree = self.instance.parseProgram('bool cmpgreaterequal = 2 >= 2;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'cmpgreaterequal')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, True)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.CMP_GREATER_EQUAL)
 
     def testCmpLessEqual(self):
-        tree = self.parser.parse('bool cmplessequal = 1 <= 2;')
+        tree = self.instance.parseProgram('bool cmplessequal = 1 <= 2;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'cmplessequal')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, True)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.CMP_LESS_EQUAL)
 
     def testCmpGreater(self):
-        tree = self.parser.parse('bool cmpgreater = 2 > 1;')
+        tree = self.instance.parseProgram('bool cmpgreater = 2 > 1;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'cmpgreater')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, True)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.CMP_GREATER)
 
     def testCmpLess(self):
-        tree = self.parser.parse('bool cmpless = 1 < 2;')
+        tree = self.instance.parseProgram('bool cmpless = 1 < 2;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'cmpless')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, True)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.CMP_LESS)
 
     def testAndOperator(self):
-        tree = self.parser.parse('bool andop = true and false;')
+        tree = self.instance.parseProgram('bool andop = true and false;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
         self.assertEqual(tree.children[0].variableName, 'andop')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, False)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.AND_OP)
 
     def testOrOperator(self):
-        tree = self.parser.parse('bool orop = true or false;')
+        tree = self.instance.parseProgram('bool orop = true or false;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.BOOL_DCL)
-        self.assertEqual(tree.children[0].variableType, VariableTypes.BOOL)
+        self.assertEqual(tree.children[0].variableName, 'orop')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, True)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.OR_OP)
 
     def testPrecedence(self):
-        tree = self.parser.parse('int precedence = 4/2^2+2*6/4-1;')
+        tree = self.instance.parseProgram('int precedence = 4/2^2+2*6/4-1;')
         self.assertEqual(len(tree.children), 1)
         self.assertEqual(tree.children[0].type, ASTTypes.INT_DCL)
-        self.assertEqual(tree.children[0].variableType, VariableTypes.INT)
+        self.assertEqual(tree.children[0].variableName, 'precedence')
         self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, 3)
-
-    def testConcatenationStrs(self):
-        tree = self.parser.parse('string concstr = "hola" + "mundo";')
-        self.assertEqual(len(tree.children), 1)
-        self.assertEqual(tree.children[0].type, ASTTypes.STRING_DCL)
-        self.assertEqual(tree.children[0].variableName, 'concstr')
-        self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, "holamundo")
-
-    def testConcatenationNums(self):
-        tree = self.parser.parse('string concnums = "hola" + 1 + "" + 23;')
-        self.assertEqual(len(tree.children), 1)
-        self.assertEqual(tree.children[0].type, ASTTypes.STRING_DCL)
-        self.assertEqual(tree.children[0].variableName, 'concnums')
-        self.assertEqual(len(tree.children[0].children), 1)
-        self.assertEqual(tree.children[0].children[0].type, ASTTypes.ASSIGN)
-        self.assertEqual(tree.children[0].children[0].variableValue, "hola123")
-
-    def testIntAssignedFloat(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int invfloatint = 5 / 4;')
-
-    def testIntWrongType(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongInt = "hola";')
-
-    def testFloatWrongType(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'float wrongFloat = "hola";')
-
-    def testStringWrongType(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'string wrongString = 2;')
-
-    def testBooleanWrongType(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool wrongbool = 2;')
-
-    def testWrongSum(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongsumbool = 3 + true;')
-
-    def testWrongSubstractStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongminustr = 3 - "hola";')
-
-    def testWrongSubstractStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongminusbool = 3 - true;')
-
-    def testWrongMultiplyStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongstrmult = 3 * "hola";')
-
-    def testWrongMultiplyBool(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongboolmult = 3 * true;')
-
-    def testWrongDivisionStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongstrdiv = 3 / "hola";')
-
-    def testWrongDivisionBool(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongbooldiv = 3 / true;')
-
-    def testDivisionByZero(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'float divZero = 30 / (2*3 - 6);')
-
-    def testWrongExpStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongstrexp = 3^"hola";')
-
-    def testWrongExpBool(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'int wrongboolexp = 3^true;')
-
-    def testEqualInvalid(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool equalInvalid = 3 == "hola";')
-
-    def testUnequalInvalid(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool unequalInvalid = 3 != "hola";')
-
-    def testGreaterEqualInvalidStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool greaterEqualInvalidStr = 3 >= "hola";')
-
-    def testGreaterEqualInvalidBool(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool greaterEqualInvalidBool = 3 >= true;')
-
-    def testLessEqualInvalidStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool lessEqualInvalidStr = 3 <= "hola";')
-
-    def testLessEqualInvalidBool(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool lessEqualInvalidBool = 3 <= true;')
-
-    def testGreaterInvalidStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool greaterInvalidStr = 3 > "hola";')
-
-    def testGreaterInvalidBool(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool greaterInvalidBool = 3 > true;')
-
-    def testLessInvalidStr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool lessInvalidStr = 3 < "hola";')
-
-    def testLessInvalidBool(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool lessInvalidBool = 3 < true;')
-
-    def testInvalidOperatorAnd(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool invalidAnd = 3 and true;')
-
-    def testInvalidOperatorOr(self):
-        self.assertRaises(ParserError, self.parser.parse,
-                          'bool invalidOr = 3 or true;')
-
-    def testExistingVariableDeclaration(self):
-        code = '''int existing = 1;
-        int existing = 2;
-        '''
-        self.assertRaises(ParserError, self.parser.parse, code)
+        assign = tree.children[0].children[0]
+        self.assertEqual(assign.type, ASTTypes.ASSIGN)
+        self.assertEqual(assign.children[0].type, ASTTypes.SUBSTRACT)
 
     def testNoEndSentence(self):
         code = '''int noEnd = 2;
         print(noEnd)'''
-        self.assertRaises(ParserError, self.parser.parse, code)
+        self.assertRaises(ParserError, self.instance.parseProgram, code)
