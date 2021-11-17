@@ -69,6 +69,30 @@ class TestTac(unittest.TestCase):
         self.assertEqual(lines[1], 'declareint a')
         self.assertEqual(lines[2], 'a = t0')
 
+    def testBoolAlgebra(self):
+        lines = self._createTac(
+            'bool a = (2 > 2) and (2 >= 2) or (2 < 2) and (2 <= 2) or (2 == 2) and (2 != 2);')
+        expectedLines = '''t0 = 2 > 2
+        t1 = 2 >= 2
+        t2 = t0 and t1
+        t3 = 2 < 2
+        t4 = t2 or t3
+        t5 = 2 <= 2
+        t6 = t4 and t5
+        t7 = 2 == 2
+        t8 = t6 or t7
+        t9 = 2 != 2
+        t10 = t8 and t9
+        declarebool a
+        a = t10
+        '''
+        expectedLines = expectedLines.split('\n')
+        for i in range(len(expectedLines)):
+            expectedLines[i] = expectedLines[i].strip()
+        self.assertEqual(len(lines), 13)
+        for i in range(len(lines)):
+            self.assertEqual(lines[i], expectedLines[i])
+
     def testIntDcl(self):
         lines = self._createTac('int a = 2;')
         self.assertEqual(len(lines), 2)

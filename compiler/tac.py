@@ -33,6 +33,22 @@ class TACProcessor:
             return '/'
         elif nodeType == ASTTypes.EXPONENT:
             return '^'
+        elif nodeType == ASTTypes.CMP_EQUAL:
+            return '=='
+        elif nodeType == ASTTypes.CMP_NOT_EQUAL:
+            return '!='
+        elif nodeType == ASTTypes.CMP_GREATER_EQUAL:
+            return '>='
+        elif nodeType == ASTTypes.CMP_LESS_EQUAL:
+            return '<='
+        elif nodeType == ASTTypes.CMP_GREATER:
+            return '>'
+        elif nodeType == ASTTypes.CMP_LESS:
+            return '<'
+        elif nodeType == ASTTypes.AND_OP:
+            return 'and'
+        elif nodeType == ASTTypes.OR_OP:
+            return 'or'
 
     def _generateAlgebraTAC(self, node: ASTNode, currentLines: List[str]):
         if node.type == ASTTypes.INT_TO_FLOAT:
@@ -59,9 +75,11 @@ class TACProcessor:
             leftVar = f'"{leftVar}"'
         if rightNode.type == ASTTypes.STRING:
             rightVar = f'"{rightVar}"'
-        if leftNode.type in SemanticAnalyzer.algebraOp or leftNode.type == ASTTypes.INT_TO_FLOAT:
+        if leftNode.type in SemanticAnalyzer.algebraOp or leftNode.type == ASTTypes.INT_TO_FLOAT or \
+                leftNode.type in SemanticAnalyzer.comparisonOp or leftNode.type in SemanticAnalyzer.boolOp:
             leftVar = self._generateAlgebraTAC(leftNode, currentLines)
-        if rightNode.type in SemanticAnalyzer.algebraOp or rightNode.type == ASTTypes.INT_TO_FLOAT:
+        if rightNode.type in SemanticAnalyzer.algebraOp or rightNode.type == ASTTypes.INT_TO_FLOAT or \
+                rightNode.type in SemanticAnalyzer.comparisonOp or rightNode.type in SemanticAnalyzer.boolOp:
             rightVar = self._generateAlgebraTAC(rightNode, currentLines)
         tmpVar = next(self.tmpGen)
         op = self._getOperatorString(node.type)
@@ -92,7 +110,8 @@ class TACProcessor:
                     f'{self._getDclTypeString(node.variableType)} {node.variableName}')
                 return
             firstop = node.children[0].children[0]
-            if firstop.type in SemanticAnalyzer.algebraOp or firstop.type == ASTTypes.INT_TO_FLOAT:
+            if firstop.type in SemanticAnalyzer.algebraOp or firstop.type == ASTTypes.INT_TO_FLOAT or \
+                    firstop.type in SemanticAnalyzer.comparisonOp or firstop.type in SemanticAnalyzer.boolOp:
                 tmpVar = self._generateAlgebraTAC(firstop, currentLines)
             else:
                 tmpVar = self._getNodeValue(node)
@@ -105,7 +124,8 @@ class TACProcessor:
                     node.variableType, node.variableName, tmpVar))
         elif node.type == ASTTypes.PRINT:
             printChild = node.children[0]
-            if printChild.type in SemanticAnalyzer.algebraOp or printChild.type == ASTTypes.INT_TO_FLOAT:
+            if printChild.type in SemanticAnalyzer.algebraOp or printChild.type == ASTTypes.INT_TO_FLOAT or \
+                    printChild.type in SemanticAnalyzer.comparisonOp or printChild.type in SemanticAnalyzer.boolOp:
                 tmpVar = self._generateAlgebraTAC(printChild, currentLines)
             else:
                 tmpVar = self._getNodeValue(printChild)
