@@ -44,6 +44,7 @@ class TACProcessor:
             currentLines.append(f'{tmpVar} = int2float({val})')
             return tmpVar
         leftNode = node.children[0]
+        print(node)
         rightNode = node.children[1]
         leftVar = self._getNodeValue(leftNode)
         rightVar = self._getNodeValue(rightNode)
@@ -66,8 +67,11 @@ class TACProcessor:
         elif type == VariableTypes.BOOL:
             return 'declarebool'
 
-    def _createDeclarationString(self, type: VariableTypes, name: str, value):
-        return f'{self._getDclTypeString(type)} {name} = {value}'
+    def _createDeclarationLines(self, type: VariableTypes, name: str, value):
+        lines = []
+        lines.append(f'{self._getDclTypeString(type)} {name}')
+        lines.append(f'{name} = {value}')
+        return lines
 
     def _generateTACHelper(self, node: ASTNode, currentLines: List[str]):
         if node.type in SemanticAnalyzer.declarationTypes:
@@ -84,7 +88,7 @@ class TACProcessor:
             if node.type == ASTTypes.REASSIGN:
                 currentLines.append(f'{node.variableName} = {tmpVar}')
             else:
-                currentLines.append(self._createDeclarationString(
+                currentLines.extend(self._createDeclarationLines(
                     node.variableType, node.variableName, tmpVar))
         else:
             for c in node.children:
