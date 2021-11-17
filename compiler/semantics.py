@@ -125,21 +125,54 @@ class SemanticAnalyzer:
                 operation.variableType = VariableTypes.INT
                 if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                     operation.variableType = VariableTypes.FLOAT
+                if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                    leftNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[leftNode],
+                                       variableType=VariableTypes.FLOAT, variableValue=float(leftNode.variableValue))
+                    operation.children[0] = leftNode
+                if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                    rightNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[rightNode],
+                                        variableType=VariableTypes.FLOAT, variableValue=float(rightNode.variableValue))
+                    operation.children[1] = rightNode
                 operation.variableValue = leftNode.variableValue + rightNode.variableValue
+
         elif operation.type == ASTTypes.SUBSTRACT:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                 operation.variableType = VariableTypes.FLOAT
+            if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                leftNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[leftNode],
+                                   variableType=VariableTypes.FLOAT, variableValue=float(leftNode.variableValue))
+                operation.children[0] = leftNode
+            if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                rightNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[rightNode],
+                                    variableType=VariableTypes.FLOAT, variableValue=float(rightNode.variableValue))
+                operation.children[1] = rightNode
             operation.variableValue = leftNode.variableValue - rightNode.variableValue
         elif operation.type == ASTTypes.MULTIPLICATION:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                 operation.variableType = VariableTypes.FLOAT
+            if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                leftNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[leftNode],
+                                   variableType=VariableTypes.FLOAT, variableValue=float(leftNode.variableValue))
+                operation.children[0] = leftNode
+            if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                rightNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[rightNode],
+                                    variableType=VariableTypes.FLOAT, variableValue=float(rightNode.variableValue))
+                operation.children[1] = rightNode
             operation.variableValue = leftNode.variableValue * rightNode.variableValue
         elif operation.type == ASTTypes.DIVISION:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                 operation.variableType = VariableTypes.FLOAT
+            if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                leftNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[leftNode],
+                                   variableType=VariableTypes.FLOAT, variableValue=float(leftNode.variableValue))
+                operation.children[0] = leftNode
+            if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                rightNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[rightNode],
+                                    variableType=VariableTypes.FLOAT, variableValue=float(rightNode.variableValue))
+                operation.children[1] = rightNode
             val = leftNode.variableValue / rightNode.variableValue
             if not val.is_integer():
                 # We are going to check the final result during declaration
@@ -152,6 +185,14 @@ class SemanticAnalyzer:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT or rightNode.variableValue < 0:
                 operation.variableType = VariableTypes.FLOAT
+            if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                leftNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[leftNode],
+                                   variableType=VariableTypes.FLOAT, variableValue=float(leftNode.variableValue))
+                operation.children[0] = leftNode
+            if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                rightNode = ASTNode(ASTTypes.INT_TO_FLOAT, children=[rightNode],
+                                    variableType=VariableTypes.FLOAT, variableValue=float(rightNode.variableValue))
+                operation.children[1] = rightNode
             operation.variableValue = pow(
                 leftNode.variableValue, rightNode.variableValue)
         elif operation.type == ASTTypes.CMP_EQUAL:
