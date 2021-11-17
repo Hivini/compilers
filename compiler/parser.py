@@ -220,19 +220,34 @@ class Parser:
         p[0] = tmpNode
 
     def p_statement_declare_float(self, p):
-        '''statement : FLOATDCL NAME assignment '''
-        p[0] = ASTNode(ASTTypes.FLOAT_DCL, children=[p[3]],
-                       variableName=p[2], variableType=VariableTypes.FLOAT, lineno=p.lineno(2))
+        '''statement : FLOATDCL NAME assignment
+                        | FLOATDCL NAME
+        '''
+        tmpNode = ASTNode(
+            ASTTypes.FLOAT_DCL, variableName=p[2], variableType=VariableTypes.FLOAT, lineno=p.lineno(2))
+        if len(p) == 4:
+            tmpNode.children = [p[3]]
+        p[0] = tmpNode
 
     def p_statement_declare_string(self, p):
-        '''statement : STRING_DCL NAME assignment '''
-        p[0] = ASTNode(ASTTypes.STRING_DCL, children=[p[3]],
-                       variableName=p[2], variableType=VariableTypes.STRING, lineno=p.lineno(2))
+        '''statement : STRING_DCL NAME assignment
+                        | STRING_DCL NAME
+        '''
+        tmpNode = ASTNode(
+            ASTTypes.STRING_DCL, variableName=p[2], variableType=VariableTypes.STRING, lineno=p.lineno(2))
+        if len(p) == 4:
+            tmpNode.children = [p[3]]
+        p[0] = tmpNode
 
     def p_statement_declare_boolean(self, p):
-        '''statement : BOOL_DCL NAME assignment '''
-        p[0] = ASTNode(ASTTypes.BOOL_DCL, children=[p[3]],
-                       variableName=p[2], variableType=VariableTypes.BOOL, lineno=p.lineno(2))
+        '''statement : BOOL_DCL NAME assignment
+                        | BOOL_DCL NAME
+        '''
+        tmpNode = ASTNode(
+            ASTTypes.BOOL_DCL, variableName=p[2], variableType=VariableTypes.BOOL, lineno=p.lineno(2))
+        if len(p) == 4:
+            tmpNode.children = [p[3]]
+        p[0] = tmpNode
 
     def p_statement_assign_variable(self, p):
         '''statement : NAME assignment '''

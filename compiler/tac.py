@@ -44,7 +44,6 @@ class TACProcessor:
             currentLines.append(f'{tmpVar} = int2float({val})')
             return tmpVar
         leftNode = node.children[0]
-        print(node)
         rightNode = node.children[1]
         leftVar = self._getNodeValue(leftNode)
         rightVar = self._getNodeValue(rightNode)
@@ -85,6 +84,8 @@ class TACProcessor:
                 tmpVar = self._generateAlgebraTAC(firstop, currentLines)
             else:
                 tmpVar = self._getNodeValue(node)
+                if firstop.type == ASTTypes.STRING:
+                    tmpVar = f'"{tmpVar}"'
             if node.type == ASTTypes.REASSIGN:
                 currentLines.append(f'{node.variableName} = {tmpVar}')
             else:
