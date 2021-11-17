@@ -149,7 +149,6 @@ class SemanticAnalyzer:
                 operation.variableValue = str(
                     leftNode.variableValue) + str(rightNode.variableValue)
                 operation.variableType = VariableTypes.STRING
-                operation.type = ASTTypes.CONCATENATION
             else:
                 operation.variableType = VariableTypes.INT
                 if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:

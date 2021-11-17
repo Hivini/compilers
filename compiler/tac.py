@@ -38,15 +38,27 @@ class TACProcessor:
         if node.type == ASTTypes.INT_TO_FLOAT:
             innerNode = node.children[0]
             val = self._getNodeValue(innerNode)
-            if innerNode.type in SemanticAnalyzer.algebraOp:
+            if innerNode.type in SemanticAnalyzer.algebraOp or innerNode.type == ASTTypes.UMINUS:
                 val = self._generateAlgebraTAC(innerNode, currentLines)
             tmpVar = next(self.tmpGen)
             currentLines.append(f'{tmpVar} = int2float({val})')
+            return tmpVar
+        if node.type == ASTTypes.UMINUS:
+            innerNode = node.children[0]
+            val = self._getNodeValue(innerNode)
+            if innerNode.type in SemanticAnalyzer.algebraOp or innerNode.type == ASTTypes.INT_TO_FLOAT:
+                val = self._generateAlgebraTAC(innerNode, currentLines)
+            tmpVar = next(self.tmpGen)
+            currentLines.append(f'{tmpVar} = -{val}')
             return tmpVar
         leftNode = node.children[0]
         rightNode = node.children[1]
         leftVar = self._getNodeValue(leftNode)
         rightVar = self._getNodeValue(rightNode)
+        if leftNode.type == ASTTypes.STRING:
+            leftVar = f'"{leftVar}"'
+        if rightNode.type == ASTTypes.STRING:
+            rightVar = f'"{rightVar}"'
         if leftNode.type in SemanticAnalyzer.algebraOp or leftNode.type == ASTTypes.INT_TO_FLOAT:
             leftVar = self._generateAlgebraTAC(leftNode, currentLines)
         if rightNode.type in SemanticAnalyzer.algebraOp or rightNode.type == ASTTypes.INT_TO_FLOAT:

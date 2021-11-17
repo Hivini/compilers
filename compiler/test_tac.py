@@ -85,7 +85,7 @@ class TestTac(unittest.TestCase):
         lines = self._createTac('string a = "b";')
         self.assertEqual(len(lines), 2)
         self.assertEqual(lines[0], 'declarestring a')
-        self.assertEqual(lines[1], 'a = b')
+        self.assertEqual(lines[1], 'a = "b"')
 
     def testBoolDclT(self):
         lines = self._createTac('bool a = true;')

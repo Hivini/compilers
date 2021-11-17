@@ -82,7 +82,6 @@ class ASTTypes(Enum):
     DIVISION = 53
     UMINUS = 54
     EXPONENT = 55
-    CONCATENATION = 56
 
 
 class ASTNode:
