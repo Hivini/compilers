@@ -41,7 +41,7 @@ class TACProcessor:
             if innerNode.type in SemanticAnalyzer.algebraOp or innerNode.type == ASTTypes.UMINUS:
                 val = self._generateAlgebraTAC(innerNode, currentLines)
             tmpVar = next(self.tmpGen)
-            currentLines.append(f'{tmpVar} = int2float({val})')
+            currentLines.append(f'{tmpVar} = toFloat {val}')
             return tmpVar
         if node.type == ASTTypes.UMINUS:
             innerNode = node.children[0]
