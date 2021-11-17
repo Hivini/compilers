@@ -210,9 +210,14 @@ class Parser:
                            lineno=p.lineno(1))
 
     def p_statement_declare_int(self, p):
-        '''statement : INTDCL NAME assignment '''
-        p[0] = ASTNode(ASTTypes.INT_DCL, children=[p[3]],
-                       variableName=p[2], variableType=VariableTypes.INT, lineno=p.lineno(2))
+        '''statement : INTDCL NAME assignment
+                        | INTDCL NAME
+        '''
+        tmpNode = ASTNode(
+            ASTTypes.INT_DCL, variableName=p[2], variableType=VariableTypes.INT, lineno=p.lineno(2))
+        if len(p) == 4:
+            tmpNode.children = [p[3]]
+        p[0] = tmpNode
 
     def p_statement_declare_float(self, p):
         '''statement : FLOATDCL NAME assignment '''
@@ -350,7 +355,8 @@ class Parser:
     def _produceSymbolTable(self, root: ASTNode, currentTable: SymbolTable, pending: List[ASTNode] = None):
         if root.type == ASTTypes.FOR_STATEMENT:
             # Save for future processing.
-            self._produceSymbolTable(root.children[3], currentTable, root.children[:3])
+            self._produceSymbolTable(
+                root.children[3], currentTable, root.children[:3])
             return
         if root.type == ASTTypes.BLOCK:
             # Global variables

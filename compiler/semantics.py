@@ -9,7 +9,7 @@ class SemanticError(Exception):
 class SemanticAnalyzer:
 
     declarationTypes = [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL,
-                        ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]
+                        ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL, ASTTypes.REASSIGN]
     algebraOp = [ASTTypes.SUM, ASTTypes.SUBSTRACT,
                  ASTTypes.MULTIPLICATION, ASTTypes.DIVISION, ASTTypes.EXPONENT, ASTTypes.UMINUS]
     comparisonOp = [ASTTypes.CMP_EQUAL, ASTTypes.CMP_NOT_EQUAL, ASTTypes.CMP_GREATER_EQUAL,
@@ -25,19 +25,38 @@ class SemanticAnalyzer:
         self._checkSemanticsHelper(self.root)
         return self.root
 
+    def _getReassingType(self, varType: VariableTypes):
+        if varType == VariableTypes.INT:
+            return ASTTypes.INT_DCL
+        elif varType == VariableTypes.FLOAT:
+            return ASTTypes.FLOAT_DCL
+        elif varType == VariableTypes.STRING:
+            return ASTTypes.STRING_DCL
+        elif varType == VariableTypes.BOOL:
+            return ASTTypes.BOOL_DCL
+
     def _checkSemanticsHelper(self, currentNode: ASTNode, symbolTable: SymbolTable = None):
         nodeType = currentNode.type
         if nodeType == ASTTypes.BLOCK:
             symbolTable = currentNode.symbolTable
         elif nodeType in self.declarationTypes:
             # Assign > Operations[]
+            if len(currentNode.children) == 0:
+                return
             baseOperation = currentNode.children[0].children[0]
             self._updateAlgebraNodeValues(baseOperation, symbolTable)
             newType = baseOperation.variableType
             newValue = baseOperation.variableValue
-            # Get transformed value if it applies.
-            baseOperation = self._checkTypeAssignment(
-                baseOperation, currentNode.type, newType, currentNode.lineno, newValue)
+            if nodeType == ASTTypes.REASSIGN:
+                # If no error it means it exists
+                variable = self._searchVariableValue(
+                    currentNode.variableName, symbolTable, currentNode.lineno)
+                reassingType = self._getReassingType(variable.type)
+                baseOperation = self._checkTypeAssignment(
+                    baseOperation, reassingType, newType, currentNode.lineno, newValue)
+            else:
+                baseOperation = self._checkTypeAssignment(
+                    baseOperation, currentNode.type, newType, currentNode.lineno, newValue)
             # In case of type changes update the variables.
             currentNode.children[0].children[0] = baseOperation
             newType = baseOperation.variableType
@@ -99,6 +118,9 @@ class SemanticAnalyzer:
         if leftNode.type == ASTTypes.VARIABLE:
             resultVariable = self._searchVariableValue(
                 leftNode.variableName, symbolTable, leftNode.lineno)
+            if resultVariable.value == None:
+                self._addError(
+                    f'Variable {leftNode.variableName} has not been initialized', leftNode.lineno)
             leftNode.variableType = resultVariable.type
             leftNode.variableValue = resultVariable.value
         if rightNode.type == ASTTypes.VARIABLE:
@@ -106,6 +128,9 @@ class SemanticAnalyzer:
                 rightNode.variableName, symbolTable, rightNode.lineno)
             rightNode.variableType = resultVariable.type
             rightNode.variableValue = resultVariable.value
+            if resultVariable.value == None:
+                self._addError(
+                    f'Variable {rightNode.variableName} has not been initialized', rightNode.lineno)
 
         if operation.type in self.algebraOp:
             self._checkArithmeticOperation(
@@ -315,7 +340,6 @@ class SemanticAnalyzer:
             if name in currentSymbolTable.table:
                 return currentSymbolTable.table[name]
             currentSymbolTable = currentSymbolTable.parent
-        # This should happen btw since it was covered in the parser.
         self._addError(f'Cannot find value {name} in any scope.', lineno)
 
     def _addError(self, error: str, lineNumber: int = None):

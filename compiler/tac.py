@@ -1,5 +1,5 @@
 from typing import List
-from compiler.parser import ASTNode, ASTTypes
+from compiler.parser import ASTNode, ASTTypes, VariableTypes
 from compiler.semantics import SemanticAnalyzer
 
 
@@ -56,26 +56,36 @@ class TACProcessor:
         currentLines.append(f'{tmpVar} = {leftVar} {op} {rightVar}')
         return tmpVar
 
-    def _createDeclarationString(self, type: ASTTypes, name: str, value):
-        if type == ASTTypes.INT_DCL:
-            return f'int {name} = {value}'
-        elif type == ASTTypes.FLOAT_DCL:
-            return f'float {name} = {value}'
-        elif type == ASTTypes.STRING_DCL:
-            return f'string {name} = {value}'
-        elif type == ASTTypes.BOOL_DCL:
-            return f'bool {name} = {value}'
+    def _getDclTypeString(self, type: VariableTypes):
+        if type == VariableTypes.INT:
+            return 'declareint'
+        elif type == VariableTypes.FLOAT:
+            return 'declarefloat'
+        elif type == VariableTypes.STRING:
+            return 'declarestring'
+        elif type == VariableTypes.BOOL:
+            return 'declarebool'
+
+    def _createDeclarationString(self, type: VariableTypes, name: str, value):
+        return f'{self._getDclTypeString(type)} {name} = {value}'
 
     def _generateTACHelper(self, node: ASTNode, currentLines: List[str]):
         if node.type in SemanticAnalyzer.declarationTypes:
             # Assign > First operation
+            if len(node.children) == 0:
+                currentLines.append(
+                    f'{self._getDclTypeString(node.variableType)} {node.variableName}')
+                return
             firstop = node.children[0].children[0]
             if firstop.type in SemanticAnalyzer.algebraOp or firstop.type == ASTTypes.INT_TO_FLOAT:
                 tmpVar = self._generateAlgebraTAC(firstop, currentLines)
             else:
                 tmpVar = self._getNodeValue(node)
-            currentLines.append(self._createDeclarationString(
-                node.type, node.variableName, tmpVar))
+            if node.type == ASTTypes.REASSIGN:
+                currentLines.append(f'{node.variableName} = {tmpVar}')
+            else:
+                currentLines.append(self._createDeclarationString(
+                    node.variableType, node.variableName, tmpVar))
         else:
             for c in node.children:
                 self._generateTACHelper(c, currentLines)
