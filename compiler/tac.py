@@ -38,7 +38,7 @@ class TACProcessor:
         if node.type == ASTTypes.INT_TO_FLOAT:
             innerNode = node.children[0]
             val = self._getNodeValue(innerNode)
-            if innerNode.type in SemanticAnalyzer.algebraOp or innerNode.type == ASTTypes.UMINUS:
+            if innerNode.type in SemanticAnalyzer.algebraOp:
                 val = self._generateAlgebraTAC(innerNode, currentLines)
             tmpVar = next(self.tmpGen)
             currentLines.append(f'{tmpVar} = toFloat {val}')
