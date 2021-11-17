@@ -194,9 +194,26 @@ class TACProcessor:
                 currentLines.extend(conditionLines[i])
                 if len(conditionLines) > 1:
                     currentLines.append(f'GOTO {continueLabel}')
-                currentLines.append(f'{conditionLabel[i]}')
+                currentLines.append(f'LABEL {conditionLabel[i]}')
             if continueLabel != None:
-                currentLines.append(continueLabel)
+                currentLines.append(f'LABEL {continueLabel}')
+        elif node.type == ASTTypes.WHILE_STATEMENT:
+            whileCondition = []
+            whileVar = self._generateAlgebraTAC(node.children[0], whileCondition)
+            whileStartLabel = next(self.labelGen)
+            whileBlockLines = []
+            self._generateTACHelper(node.children[1], whileBlockLines)
+            whileEndLabel = next(self.labelGen)
+            # Start the while loop
+            currentLines.append(f'LABEL {whileStartLabel}')
+            currentLines.extend(whileCondition)
+            currentLines.append(f'{whileVar} IFGOTO {whileEndLabel}')
+            # While body
+            currentLines.extend(whileBlockLines)
+            # End of while
+            currentLines.append(f'GOTO {whileStartLabel}')
+            currentLines.append(f'LABEL {whileEndLabel}')
+            
         else:
             for c in node.children:
                 self._generateTACHelper(c, currentLines)

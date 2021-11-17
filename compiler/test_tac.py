@@ -123,7 +123,7 @@ class TestTac(unittest.TestCase):
         t5 IFGOTO L0
         print 1
         GOTO L4
-        L0
+        LABEL L0
         t1 = 3 >= 3
         t2 = 4 == 4
         t3 = t1 and t2
@@ -131,29 +131,66 @@ class TestTac(unittest.TestCase):
         t6 IFGOTO L1
         print 3
         GOTO L4
-        L1
+        LABEL L1
         t7 = not a
         t7 IFGOTO L2
         print 4
         GOTO L4
-        L2
+        LABEL L2
         t4 = a == True
         t8 = not t4
         t8 IFGOTO L3
         a = 5
         print a
         GOTO L4
-        L3
+        LABEL L3
         print 2
         declareint c
         c = 2
-        L4
+        LABEL L4
         print a
         '''
         expectedLines = expectedLines.split('\n')
         for i in range(len(expectedLines)):
             expectedLines[i] = expectedLines[i].strip()
         self.assertEqual(len(lines), 33)
+        for i in range(len(lines)):
+            self.assertEqual(lines[i], expectedLines[i])
+
+    def testWhileStatement(self):
+        prog = '''
+        bool a = true;
+        int i = 0;
+        while (a) {
+            print(a);
+            if (i == 10) {
+                a = false;
+            }
+            i = i + 1;
+        }
+        '''
+        lines = self._createTac(prog)
+        expectedLines = '''declarebool a
+        a = True
+        declareint i
+        i = 0
+        LABEL L0
+        a IFGOTO L2
+        print a
+        t0 = i == 10
+        t1 = not t0
+        t1 IFGOTO L1
+        a = False
+        LABEL L1
+        t2 = i + 1
+        i = t2
+        GOTO L0
+        LABEL L2
+        '''
+        expectedLines = expectedLines.split('\n')
+        for i in range(len(expectedLines)):
+            expectedLines[i] = expectedLines[i].strip()
+        self.assertEqual(len(lines), 16)
         for i in range(len(lines)):
             self.assertEqual(lines[i], expectedLines[i])
 
