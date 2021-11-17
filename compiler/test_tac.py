@@ -93,6 +93,71 @@ class TestTac(unittest.TestCase):
         for i in range(len(lines)):
             self.assertEqual(lines[i], expectedLines[i])
 
+    def testIfStatement(self):
+        prog = '''
+        int a = 5;
+        if (2 == 2) {
+            print(1);
+        } 
+        elif (3 >= 3 and 4 == 4) {
+            print(3);
+        }
+        elif (a) {
+            print(4);
+        }
+        elif (a == true) {
+            a = 5;
+            print(a);
+        }
+        else {
+            print(2);
+            int c = 2;
+        }
+        print(a);
+        '''
+        lines = self._createTac(prog)
+        expectedLines = '''declareint a
+        a = 5
+        t0 = 2 == 2
+        t5 = not t0
+        t5 IFGOTO L0
+        print 1
+        GOTO L4
+        L0
+        t1 = 3 >= 3
+        t2 = 4 == 4
+        t3 = t1 and t2
+        t6 = not t3
+        t6 IFGOTO L1
+        print 3
+        GOTO L4
+        L1
+        t7 = not a
+        t7 IFGOTO L2
+        print 4
+        GOTO L4
+        L2
+        t4 = a == True
+        t8 = not t4
+        t8 IFGOTO L3
+        a = 5
+        print a
+        GOTO L4
+        L3
+        print 2
+        declareint c
+        c = 2
+        GOTO L4
+        L4
+        print a
+        '''
+        expectedLines = expectedLines.split('\n')
+        for i in range(len(expectedLines)):
+            expectedLines[i] = expectedLines[i].strip()
+        self.assertEqual(len(lines), 34)
+        for i in range(len(lines)):
+            self.assertEqual(lines[i], expectedLines[i])
+
     def testIntDcl(self):
         lines = self._createTac('int a = 2;')
         self.assertEqual(len(lines), 2)
