@@ -72,7 +72,7 @@ class SemanticAnalyzer:
 
     def _createInt2FloatNode(self, node: ASTNode):
         return ASTNode(ASTTypes.INT_TO_FLOAT, children=[node],
-                       variableType=VariableTypes.FLOAT, variableValue=float(node.variableValue))
+                       variableType=VariableTypes.FLOAT, variableValue=node.variableValue)
 
     def _updateAlgebraNodeValues(self, operation: ASTNode, symbolTable: SymbolTable):
         if not (operation.type in self.algebraOp or
