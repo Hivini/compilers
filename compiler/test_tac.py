@@ -147,14 +147,13 @@ class TestTac(unittest.TestCase):
         print 2
         declareint c
         c = 2
-        GOTO L4
         L4
         print a
         '''
         expectedLines = expectedLines.split('\n')
         for i in range(len(expectedLines)):
             expectedLines[i] = expectedLines[i].strip()
-        self.assertEqual(len(lines), 34)
+        self.assertEqual(len(lines), 33)
         for i in range(len(lines)):
             self.assertEqual(lines[i], expectedLines[i])
 

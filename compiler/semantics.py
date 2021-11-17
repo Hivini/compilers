@@ -85,6 +85,9 @@ class SemanticAnalyzer:
                 currentNode.variableName = base.variableName
                 currentNode.variableValue = base.variableValue
             self._updateAlgebraNodeValues(base, symbolTable)
+        elif nodeType in SemanticAnalyzer.comparisonOp or nodeType in SemanticAnalyzer.boolOp:
+            self._updateAlgebraNodeValues(currentNode, symbolTable)
+            return
         for c in currentNode.children:
             self._checkSemanticsHelper(c, symbolTable)
 

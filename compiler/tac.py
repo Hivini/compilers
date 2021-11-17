@@ -185,7 +185,6 @@ class TACProcessor:
                 # If it's in the end, it means it's an else
                 if i == len(conditionLines) - 1 and len(conditionLines) > 1:
                     currentLines.extend(conditionLines[i])
-                    currentLines.append(f'GOTO {continueLabel}')
                     continue
                 conditionVar = next(self.tmpGen)
                 currentLines.extend(conditions[i])
