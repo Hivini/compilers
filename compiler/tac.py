@@ -8,12 +8,20 @@ class TACProcessor:
     def __init__(self, astroot: ASTNode) -> None:
         self.astroot = astroot
         self.tmpGen = self._tempGenerator()
+        self.labelGen = self._labelGenerator()
 
     def _tempGenerator(self) -> str:
         """Generates temporal variable names."""
         counter = 0
         while True:
             yield f"t{counter}"
+            counter += 1
+
+    def _labelGenerator(self) -> str:
+        """Generates temporal labels."""
+        counter = 0
+        while True:
+            yield f"L{counter}"
             counter += 1
 
     def _getNodeValue(self, node: ASTNode):
@@ -67,6 +75,8 @@ class TACProcessor:
             tmpVar = next(self.tmpGen)
             currentLines.append(f'{tmpVar} = -{val}')
             return tmpVar
+        if node.type == ASTTypes.VARIABLE:
+            return self._getNodeValue(node)
         leftNode = node.children[0]
         rightNode = node.children[1]
         leftVar = self._getNodeValue(leftNode)
@@ -132,6 +142,62 @@ class TACProcessor:
                 if printChild.type == ASTTypes.STRING:
                     tmpVar = f'"{tmpVar}"'
             currentLines.append(f'print {tmpVar}')
+        elif node.type == ASTTypes.IF_STATEMENT:
+            # Get the if information
+            ifNode = node.children[0]
+            ifCondition = []
+            ifVar = self._generateAlgebraTAC(ifNode.children[0], ifCondition)
+            ifBlockLines = []
+            self._generateTACHelper(ifNode.children[1], ifBlockLines)
+            # Define elements
+            conditions = [ifCondition]
+            conditionsVar = [ifVar]
+            conditionLines = [ifBlockLines]
+            conditionLabel = []
+            for i in range(1, len(node.children)):
+                currentNode = node.children[i]
+                if currentNode.type == ASTTypes.ELSE:
+                    conditionLabel.append(next(self.labelGen))
+                    elseLines = []
+                    self._generateTACHelper(currentNode.children[0], elseLines)
+                    conditionLines.append(elseLines)
+                # Process elifs
+                else:
+                    # Process condition
+                    init = []
+                    cvar = self._generateAlgebraTAC(
+                        currentNode.children[0], init)
+                    conditions.append(init)
+                    conditionsVar.append(cvar)
+                    # Create next label
+                    conditionLabel.append(next(self.labelGen))
+                    # Process block lines
+                    elifLines = []
+                    self._generateTACHelper(currentNode.children[1], elifLines)
+                    conditionLines.append(elifLines)
+
+            continueLabel = None
+            if len(conditionLines) > 1:
+                continueLabel = next(self.labelGen)
+            else:
+                conditionLabel.append(next(self.labelGen))
+            for i in range(len(conditionLines)):
+                # If it's in the end, it means it's an else
+                if i == len(conditionLines) - 1 and len(conditionLines) > 1:
+                    currentLines.extend(conditionLines[i])
+                    currentLines.append(f'GOTO {continueLabel}')
+                    continue
+                conditionVar = next(self.tmpGen)
+                currentLines.extend(conditions[i])
+                currentLines.append(f'{conditionVar} = not {conditionsVar[i]}')
+                currentLines.append(
+                    f'{conditionVar} IFGOTO {conditionLabel[i]}')
+                currentLines.extend(conditionLines[i])
+                if len(conditionLines) > 1:
+                    currentLines.append(f'GOTO {continueLabel}')
+                currentLines.append(f'{conditionLabel[i]}')
+            if continueLabel != None:
+                currentLines.append(continueLabel)
         else:
             for c in node.children:
                 self._generateTACHelper(c, currentLines)

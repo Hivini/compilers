@@ -177,8 +177,10 @@ class Parser:
         ifNode = ASTNode(ASTTypes.IF, children=[
                          p[3], p[6]], lineno=p.lineno(1))
         children = [ifNode]
+        # Elifs
         if (p[8] != None):
-            children.append(p[8])
+            children.extend(p[8])
+        # Else
         if (p[9] != None):
             children.append(p[9])
         p[0] = ASTNode(ASTTypes.IF_STATEMENT, children=children)
@@ -192,10 +194,11 @@ class Parser:
             children = [p[3]]
             if (p[6] != None):
                 children.append(p[6])
+            currentElifs = [ASTNode(
+                ASTTypes.ELIF, children=children, lineno=p.lineno(1))]
             if (p[8] != None):
-                children.append(p[8])
-            p[0] = ASTNode(
-                ASTTypes.ELIF, children=children, lineno=p.lineno(1))
+                currentElifs.extend(p[8])
+            p[0] = currentElifs
 
     def p_block_else(self, p):
         '''else : ELSE "{" program "}"

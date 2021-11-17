@@ -54,6 +54,9 @@ class SemanticAnalyzer:
                 reassingType = self._getReassingType(variable.type)
                 baseOperation = self._checkTypeAssignment(
                     baseOperation, reassingType, newType, currentNode.lineno, newValue)
+                variable.value = baseOperation.variableValue
+                self._updateVariableValue(
+                    currentNode.variableName, variable, symbolTable, currentNode.lineno)
             else:
                 baseOperation = self._checkTypeAssignment(
                     baseOperation, currentNode.type, newType, currentNode.lineno, newValue)
@@ -65,7 +68,8 @@ class SemanticAnalyzer:
             currentNode.children[0].variableValue = newValue
             currentNode.variableType = newType
             currentNode.variableValue = newValue
-            symbolTable.table[currentNode.variableName].value = newValue
+            if nodeType != ASTTypes.REASSIGN:
+                symbolTable.table[currentNode.variableName].value = newValue
             return
         elif nodeType == ASTTypes.PRINT:
             base = currentNode.children[0]
@@ -352,6 +356,15 @@ class SemanticAnalyzer:
         while currentSymbolTable != None:
             if name in currentSymbolTable.table:
                 return currentSymbolTable.table[name]
+            currentSymbolTable = currentSymbolTable.parent
+        self._addError(f'Cannot find value {name} in any scope.', lineno)
+
+    def _updateVariableValue(self, name: str, newValue: Variable, symbolTable: SymbolTable, lineno: int):
+        currentSymbolTable = symbolTable
+        while currentSymbolTable != None:
+            if name in currentSymbolTable.table:
+                currentSymbolTable.table[name] = newValue
+                return
             currentSymbolTable = currentSymbolTable.parent
         self._addError(f'Cannot find value {name} in any scope.', lineno)
 
