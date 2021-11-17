@@ -4,7 +4,7 @@ from compiler.parser import ASTTypes, Parser, VariableTypes
 from compiler.semantics import SemanticAnalyzer, SemanticError
 
 
-class TestParser(unittest.TestCase):
+class TestSemantics(unittest.TestCase):
 
     def setUp(self):
         # Just numbers as lines to avoid errors

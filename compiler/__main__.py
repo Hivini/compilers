@@ -6,6 +6,7 @@ from compiler.lexer import Lexer
 from compiler.logger import Logger
 from compiler.parser import Parser, ParserError
 from compiler.semantics import SemanticAnalyzer, SemanticError
+from compiler.tac import TACProcessor
 
 
 def PrintAST(logger, current, depth):
@@ -80,6 +81,8 @@ def Run():
             PrintAST(logger, root, 0)
             logger.LogDebug('Symbol Tables after semantics:')
             PrintSymbolTable(logger, parserInstance.symbolTable, 0)
+        tacProcessor = TACProcessor(root)
+        tacProcessor.generateTACPrint()
         logger.LogSuccess('Successfully compiled!')
     except ParserError:
         logger.LogError(parserInstance.first_error)
