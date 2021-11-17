@@ -103,6 +103,15 @@ class TACProcessor:
             else:
                 currentLines.extend(self._createDeclarationLines(
                     node.variableType, node.variableName, tmpVar))
+        elif node.type == ASTTypes.PRINT:
+            printChild = node.children[0]
+            if printChild.type in SemanticAnalyzer.algebraOp or printChild.type == ASTTypes.INT_TO_FLOAT:
+                tmpVar = self._generateAlgebraTAC(printChild, currentLines)
+            else:
+                tmpVar = self._getNodeValue(printChild)
+                if printChild.type == ASTTypes.STRING:
+                    tmpVar = f'"{tmpVar}"'
+            currentLines.append(f'print {tmpVar}')
         else:
             for c in node.children:
                 self._generateTACHelper(c, currentLines)

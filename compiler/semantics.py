@@ -67,6 +67,20 @@ class SemanticAnalyzer:
             currentNode.variableValue = newValue
             symbolTable.table[currentNode.variableName].value = newValue
             return
+        elif nodeType == ASTTypes.PRINT:
+            base = currentNode.children[0]
+            if base.type == ASTTypes.VARIABLE:
+                variable = self._searchVariableValue(
+                    base.variableName, symbolTable, currentNode.lineno)
+                if variable.value == None:
+                    self._addError(
+                        f'Variable {base.variableName} has not been initialized', base.lineno)
+                base.variableType = variable.type
+                base.variableValue = variable.value
+                currentNode.variableType = base.variableType
+                currentNode.variableName = base.variableName
+                currentNode.variableValue = base.variableValue
+            self._updateAlgebraNodeValues(base, symbolTable)
         for c in currentNode.children:
             self._checkSemanticsHelper(c, symbolTable)
 
