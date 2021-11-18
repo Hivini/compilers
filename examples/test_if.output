@@ -1,27 +1,28 @@
 declareint a
 a = 5
 t0 = 2 == 2
-t5 = not t0
-t5 IFGOTO L0
+t6 = not t0
+t6 IFGOTO L0
 print 1
 GOTO L4
 LABEL L0
 t1 = 3 >= 3
 t2 = 4 == 4
 t3 = t1 and t2
-t6 = not t3
-t6 IFGOTO L1
+t7 = not t3
+t7 IFGOTO L1
 print 3
 GOTO L4
 LABEL L1
-t7 = not a
-t7 IFGOTO L2
+t4 = a
+t8 = not t4
+t8 IFGOTO L2
 print 4
 GOTO L4
 LABEL L2
-t4 = a == True
-t8 = not t4
-t8 IFGOTO L3
+t5 = a == True
+t9 = not t5
+t9 IFGOTO L3
 a = 5
 print a
 GOTO L4

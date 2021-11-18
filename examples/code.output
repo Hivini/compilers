@@ -16,8 +16,9 @@ c = 2
 print c
 LABEL L0
 LABEL L1
-t8 = not True
-t8 IFGOTO L2
+t8 = True
+t9 = not t8
+t9 IFGOTO L2
 declareint d
 d = 3
 GOTO L1
