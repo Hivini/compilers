@@ -4,7 +4,7 @@ from compiler.parser import ASTTypes, Parser, VariableTypes
 from compiler.semantics import SemanticAnalyzer, SemanticError
 
 
-class TestParser(unittest.TestCase):
+class TestSemantics(unittest.TestCase):
 
     def setUp(self):
         # Just numbers as lines to avoid errors
@@ -64,7 +64,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].variableValue, "hola mundo")
         self.assertEqual(len(tree.children[0].children[0].children), 1)
         self.assertEqual(
-            tree.children[0].children[0].children[0].type, ASTTypes.CONCATENATION)
+            tree.children[0].children[0].children[0].type, ASTTypes.SUM)
 
     def testConcatenationWithNums(self):
         tree = self._prepareSemantics(
@@ -76,7 +76,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(tree.children[0].variableValue, "hola mundo2")
         self.assertEqual(len(tree.children[0].children[0].children), 1)
         self.assertEqual(
-            tree.children[0].children[0].children[0].type, ASTTypes.CONCATENATION)
+            tree.children[0].children[0].children[0].type, ASTTypes.SUM)
 
     def testSubstraction(self):
         tree = self._prepareSemantics('int sum = 1 - 3 + 2;')

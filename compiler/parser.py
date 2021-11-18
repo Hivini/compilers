@@ -82,7 +82,6 @@ class ASTTypes(Enum):
     DIVISION = 53
     UMINUS = 54
     EXPONENT = 55
-    CONCATENATION = 56
 
 
 class ASTNode:
@@ -178,8 +177,10 @@ class Parser:
         ifNode = ASTNode(ASTTypes.IF, children=[
                          p[3], p[6]], lineno=p.lineno(1))
         children = [ifNode]
+        # Elifs
         if (p[8] != None):
-            children.append(p[8])
+            children.extend(p[8])
+        # Else
         if (p[9] != None):
             children.append(p[9])
         p[0] = ASTNode(ASTTypes.IF_STATEMENT, children=children)
@@ -193,10 +194,11 @@ class Parser:
             children = [p[3]]
             if (p[6] != None):
                 children.append(p[6])
+            currentElifs = [ASTNode(
+                ASTTypes.ELIF, children=children, lineno=p.lineno(1))]
             if (p[8] != None):
-                children.append(p[8])
-            p[0] = ASTNode(
-                ASTTypes.ELIF, children=children, lineno=p.lineno(1))
+                currentElifs.extend(p[8])
+            p[0] = currentElifs
 
     def p_block_else(self, p):
         '''else : ELSE "{" program "}"
@@ -210,24 +212,44 @@ class Parser:
                            lineno=p.lineno(1))
 
     def p_statement_declare_int(self, p):
-        '''statement : INTDCL NAME assignment '''
-        p[0] = ASTNode(ASTTypes.INT_DCL, children=[p[3]],
-                       variableName=p[2], variableType=VariableTypes.INT, lineno=p.lineno(2))
+        '''statement : INTDCL NAME assignment
+                        | INTDCL NAME
+        '''
+        tmpNode = ASTNode(
+            ASTTypes.INT_DCL, variableName=p[2], variableType=VariableTypes.INT, lineno=p.lineno(2))
+        if len(p) == 4:
+            tmpNode.children = [p[3]]
+        p[0] = tmpNode
 
     def p_statement_declare_float(self, p):
-        '''statement : FLOATDCL NAME assignment '''
-        p[0] = ASTNode(ASTTypes.FLOAT_DCL, children=[p[3]],
-                       variableName=p[2], variableType=VariableTypes.FLOAT, lineno=p.lineno(2))
+        '''statement : FLOATDCL NAME assignment
+                        | FLOATDCL NAME
+        '''
+        tmpNode = ASTNode(
+            ASTTypes.FLOAT_DCL, variableName=p[2], variableType=VariableTypes.FLOAT, lineno=p.lineno(2))
+        if len(p) == 4:
+            tmpNode.children = [p[3]]
+        p[0] = tmpNode
 
     def p_statement_declare_string(self, p):
-        '''statement : STRING_DCL NAME assignment '''
-        p[0] = ASTNode(ASTTypes.STRING_DCL, children=[p[3]],
-                       variableName=p[2], variableType=VariableTypes.STRING, lineno=p.lineno(2))
+        '''statement : STRING_DCL NAME assignment
+                        | STRING_DCL NAME
+        '''
+        tmpNode = ASTNode(
+            ASTTypes.STRING_DCL, variableName=p[2], variableType=VariableTypes.STRING, lineno=p.lineno(2))
+        if len(p) == 4:
+            tmpNode.children = [p[3]]
+        p[0] = tmpNode
 
     def p_statement_declare_boolean(self, p):
-        '''statement : BOOL_DCL NAME assignment '''
-        p[0] = ASTNode(ASTTypes.BOOL_DCL, children=[p[3]],
-                       variableName=p[2], variableType=VariableTypes.BOOL, lineno=p.lineno(2))
+        '''statement : BOOL_DCL NAME assignment
+                        | BOOL_DCL NAME
+        '''
+        tmpNode = ASTNode(
+            ASTTypes.BOOL_DCL, variableName=p[2], variableType=VariableTypes.BOOL, lineno=p.lineno(2))
+        if len(p) == 4:
+            tmpNode.children = [p[3]]
+        p[0] = tmpNode
 
     def p_statement_assign_variable(self, p):
         '''statement : NAME assignment '''
@@ -350,7 +372,8 @@ class Parser:
     def _produceSymbolTable(self, root: ASTNode, currentTable: SymbolTable, pending: List[ASTNode] = None):
         if root.type == ASTTypes.FOR_STATEMENT:
             # Save for future processing.
-            self._produceSymbolTable(root.children[3], currentTable, root.children[:3])
+            self._produceSymbolTable(
+                root.children[3], currentTable, root.children[:3])
             return
         if root.type == ASTTypes.BLOCK:
             # Global variables

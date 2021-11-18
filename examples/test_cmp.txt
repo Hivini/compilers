@@ -1,0 +1,11 @@
+bool a = true;
+bool b = false;
+int c = 1;
+int d = 2;
+bool asd = (a == b) and (c != d);
+print(asd);
+print(a != b);
+print(c >= d);
+print(d <= c);
+print(d > c);
+print(c < d);

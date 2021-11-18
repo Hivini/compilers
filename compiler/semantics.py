@@ -9,12 +9,14 @@ class SemanticError(Exception):
 class SemanticAnalyzer:
 
     declarationTypes = [ASTTypes.INT_DCL, ASTTypes.FLOAT_DCL,
-                        ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL]
+                        ASTTypes.STRING_DCL, ASTTypes.BOOL_DCL, ASTTypes.REASSIGN]
     algebraOp = [ASTTypes.SUM, ASTTypes.SUBSTRACT,
                  ASTTypes.MULTIPLICATION, ASTTypes.DIVISION, ASTTypes.EXPONENT, ASTTypes.UMINUS]
     comparisonOp = [ASTTypes.CMP_EQUAL, ASTTypes.CMP_NOT_EQUAL, ASTTypes.CMP_GREATER_EQUAL,
                     ASTTypes.CMP_LESS_EQUAL, ASTTypes.CMP_GREATER, ASTTypes.CMP_LESS]
     boolOp = [ASTTypes.AND_OP, ASTTypes.OR_OP]
+    typeNodes = [ASTTypes.INT, ASTTypes.FLOAT, ASTTypes.STRING,
+                 ASTTypes.BOOL_FALSE, ASTTypes.BOOL_TRUE]
 
     def __init__(self, root: ASTNode, progLines: List[str]) -> None:
         self.root = root
@@ -25,19 +27,41 @@ class SemanticAnalyzer:
         self._checkSemanticsHelper(self.root)
         return self.root
 
+    def _getReassingType(self, varType: VariableTypes):
+        if varType == VariableTypes.INT:
+            return ASTTypes.INT_DCL
+        elif varType == VariableTypes.FLOAT:
+            return ASTTypes.FLOAT_DCL
+        elif varType == VariableTypes.STRING:
+            return ASTTypes.STRING_DCL
+        elif varType == VariableTypes.BOOL:
+            return ASTTypes.BOOL_DCL
+
     def _checkSemanticsHelper(self, currentNode: ASTNode, symbolTable: SymbolTable = None):
         nodeType = currentNode.type
         if nodeType == ASTTypes.BLOCK:
             symbolTable = currentNode.symbolTable
         elif nodeType in self.declarationTypes:
             # Assign > Operations[]
+            if len(currentNode.children) == 0:
+                return
             baseOperation = currentNode.children[0].children[0]
             self._updateAlgebraNodeValues(baseOperation, symbolTable)
             newType = baseOperation.variableType
             newValue = baseOperation.variableValue
-            # Get transformed value if it applies.
-            baseOperation = self._checkTypeAssignment(
-                baseOperation, currentNode.type, newType, currentNode.lineno, newValue)
+            if nodeType == ASTTypes.REASSIGN:
+                # If no error it means it exists
+                variable = self._searchVariableValue(
+                    currentNode.variableName, symbolTable, currentNode.lineno)
+                reassingType = self._getReassingType(variable.type)
+                baseOperation = self._checkTypeAssignment(
+                    baseOperation, reassingType, newType, currentNode.lineno, newValue)
+                variable.value = baseOperation.variableValue
+                self._updateVariableValue(
+                    currentNode.variableName, variable, symbolTable, currentNode.lineno)
+            else:
+                baseOperation = self._checkTypeAssignment(
+                    baseOperation, currentNode.type, newType, currentNode.lineno, newValue)
             # In case of type changes update the variables.
             currentNode.children[0].children[0] = baseOperation
             newType = baseOperation.variableType
@@ -46,7 +70,25 @@ class SemanticAnalyzer:
             currentNode.children[0].variableValue = newValue
             currentNode.variableType = newType
             currentNode.variableValue = newValue
-            symbolTable.table[currentNode.variableName].value = newValue
+            if nodeType != ASTTypes.REASSIGN:
+                symbolTable.table[currentNode.variableName].value = newValue
+            return
+        elif nodeType == ASTTypes.PRINT:
+            base = currentNode.children[0]
+            if base.type == ASTTypes.VARIABLE:
+                variable = self._searchVariableValue(
+                    base.variableName, symbolTable, currentNode.lineno)
+                if variable.value == None:
+                    self._addError(
+                        f'Variable {base.variableName} has not been initialized', base.lineno)
+                base.variableType = variable.type
+                base.variableValue = variable.value
+                currentNode.variableType = base.variableType
+                currentNode.variableName = base.variableName
+                currentNode.variableValue = base.variableValue
+            self._updateAlgebraNodeValues(base, symbolTable)
+        elif nodeType in SemanticAnalyzer.comparisonOp or nodeType in SemanticAnalyzer.boolOp:
+            self._updateAlgebraNodeValues(currentNode, symbolTable)
             return
         for c in currentNode.children:
             self._checkSemanticsHelper(c, symbolTable)
@@ -69,6 +111,10 @@ class SemanticAnalyzer:
             self._addError(
                 f'Cannot assign {newType.name} to BOOL value', lineno)
         return node
+
+    def _createInt2FloatNode(self, node: ASTNode):
+        return ASTNode(ASTTypes.INT_TO_FLOAT, children=[node],
+                       variableType=VariableTypes.FLOAT, variableValue=node.variableValue)
 
     def _updateAlgebraNodeValues(self, operation: ASTNode, symbolTable: SymbolTable):
         if not (operation.type in self.algebraOp or
@@ -95,6 +141,9 @@ class SemanticAnalyzer:
         if leftNode.type == ASTTypes.VARIABLE:
             resultVariable = self._searchVariableValue(
                 leftNode.variableName, symbolTable, leftNode.lineno)
+            if resultVariable.value == None:
+                self._addError(
+                    f'Variable {leftNode.variableName} has not been initialized', leftNode.lineno)
             leftNode.variableType = resultVariable.type
             leftNode.variableValue = resultVariable.value
         if rightNode.type == ASTTypes.VARIABLE:
@@ -102,6 +151,9 @@ class SemanticAnalyzer:
                 rightNode.variableName, symbolTable, rightNode.lineno)
             rightNode.variableType = resultVariable.type
             rightNode.variableValue = resultVariable.value
+            if resultVariable.value == None:
+                self._addError(
+                    f'Variable {rightNode.variableName} has not been initialized', rightNode.lineno)
 
         if operation.type in self.algebraOp:
             self._checkArithmeticOperation(
@@ -120,26 +172,50 @@ class SemanticAnalyzer:
                 operation.variableValue = str(
                     leftNode.variableValue) + str(rightNode.variableValue)
                 operation.variableType = VariableTypes.STRING
-                operation.type = ASTTypes.CONCATENATION
             else:
                 operation.variableType = VariableTypes.INT
                 if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                     operation.variableType = VariableTypes.FLOAT
+                if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                    leftNode = self._createInt2FloatNode(leftNode)
+                    operation.children[0] = leftNode
+                if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                    rightNode = self._createInt2FloatNode(rightNode)
+                    operation.children[1] = rightNode
                 operation.variableValue = leftNode.variableValue + rightNode.variableValue
+
         elif operation.type == ASTTypes.SUBSTRACT:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                 operation.variableType = VariableTypes.FLOAT
+            if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                leftNode = self._createInt2FloatNode(leftNode)
+                operation.children[0] = leftNode
+            if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                rightNode = self._createInt2FloatNode(rightNode)
+                operation.children[1] = rightNode
             operation.variableValue = leftNode.variableValue - rightNode.variableValue
         elif operation.type == ASTTypes.MULTIPLICATION:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                 operation.variableType = VariableTypes.FLOAT
+            if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                leftNode = self._createInt2FloatNode(leftNode)
+                operation.children[0] = leftNode
+            if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                rightNode = self._createInt2FloatNode(rightNode)
+                operation.children[1] = rightNode
             operation.variableValue = leftNode.variableValue * rightNode.variableValue
         elif operation.type == ASTTypes.DIVISION:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT:
                 operation.variableType = VariableTypes.FLOAT
+            if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                leftNode = self._createInt2FloatNode(leftNode)
+                operation.children[0] = leftNode
+            if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                rightNode = self._createInt2FloatNode(rightNode)
+                operation.children[1] = rightNode
             val = leftNode.variableValue / rightNode.variableValue
             if not val.is_integer():
                 # We are going to check the final result during declaration
@@ -152,6 +228,12 @@ class SemanticAnalyzer:
             operation.variableType = VariableTypes.INT
             if leftType == VariableTypes.FLOAT or rightType == VariableTypes.FLOAT or rightNode.variableValue < 0:
                 operation.variableType = VariableTypes.FLOAT
+            if operation.variableType == VariableTypes.FLOAT and leftType == VariableTypes.INT:
+                leftNode = self._createInt2FloatNode(leftNode)
+                operation.children[0] = leftNode
+            if operation.variableType == VariableTypes.FLOAT and rightType == VariableTypes.INT:
+                rightNode = self._createInt2FloatNode(rightNode)
+                operation.children[1] = rightNode
             operation.variableValue = pow(
                 leftNode.variableValue, rightNode.variableValue)
         elif operation.type == ASTTypes.CMP_EQUAL:
@@ -280,7 +362,15 @@ class SemanticAnalyzer:
             if name in currentSymbolTable.table:
                 return currentSymbolTable.table[name]
             currentSymbolTable = currentSymbolTable.parent
-        # This should happen btw since it was covered in the parser.
+        self._addError(f'Cannot find value {name} in any scope.', lineno)
+
+    def _updateVariableValue(self, name: str, newValue: Variable, symbolTable: SymbolTable, lineno: int):
+        currentSymbolTable = symbolTable
+        while currentSymbolTable != None:
+            if name in currentSymbolTable.table:
+                currentSymbolTable.table[name] = newValue
+                return
+            currentSymbolTable = currentSymbolTable.parent
         self._addError(f'Cannot find value {name} in any scope.', lineno)
 
     def _addError(self, error: str, lineNumber: int = None):

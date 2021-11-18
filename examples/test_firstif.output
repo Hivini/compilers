@@ -1,0 +1,25 @@
+declareint a
+a = 5
+t0 = False
+t8 = not t0
+t8 IFGOTO L0
+t1 = 5 * 2
+t2 = toFloat t1
+declarefloat c
+c = t2
+GOTO L2
+LABEL L0
+t3 = a == 5
+t9 = not t3
+t9 IFGOTO L1
+t4 = 5 * 3
+t5 = toFloat t4
+declarefloat c
+c = t5
+GOTO L2
+LABEL L1
+t6 = 5 * 4
+t7 = toFloat t6
+declarefloat c
+c = t7
+LABEL L2

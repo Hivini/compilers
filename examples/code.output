@@ -1,0 +1,27 @@
+t0 = 1 - 2
+t1 = t0 * 4
+t2 = t1 / 2
+declareint a
+a = t2
+t3 = a + 2
+t4 = t3 ^ 2
+t5 = toFloat t4
+declarefloat b
+b = t5
+t6 = a > b
+t7 = not t6
+t7 IFGOTO L0
+declareint c
+c = 2
+print c
+LABEL L0
+LABEL L1
+t8 = True
+t9 = not t8
+t9 IFGOTO L2
+declareint d
+d = 3
+GOTO L1
+LABEL L2
+print b
+print a

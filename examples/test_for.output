@@ -1,0 +1,15 @@
+declareint i
+i = 0
+LABEL L0
+t0 = i < 9
+t2 = not t0
+t2 IFGOTO L1
+declareint a
+a = 5
+print a
+t1 = i + 1
+i = t1
+GOTO L0
+LABEL L1
+declareint i
+i = 2

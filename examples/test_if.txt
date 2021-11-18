@@ -1,0 +1,19 @@
+int a = 5;
+if (2 == 2) {
+    print(1);
+} 
+elif (3 >= 3 and 4 == 4) {
+    print(3);
+}
+elif (a) {
+    print(4);
+}
+elif (a == true) {
+    a = 5;
+    print(a);
+}
+else {
+    print(2);
+    int c = 2;
+}
+print(a);
