@@ -199,7 +199,8 @@ class TACProcessor:
                 currentLines.append(f'LABEL {continueLabel}')
         elif node.type == ASTTypes.WHILE_STATEMENT:
             whileCondition = []
-            whileVar = self._generateAlgebraTAC(node.children[0], whileCondition)
+            whileVar = self._generateAlgebraTAC(
+                node.children[0], whileCondition)
             whileStartLabel = next(self.labelGen)
             whileBlockLines = []
             self._generateTACHelper(node.children[1], whileBlockLines)
@@ -213,7 +214,36 @@ class TACProcessor:
             # End of while
             currentLines.append(f'GOTO {whileStartLabel}')
             currentLines.append(f'LABEL {whileEndLabel}')
-            
+        elif node.type == ASTTypes.FOR_STATEMENT:
+            forVar = node.children[0]
+            forCond = node.children[1]
+            forUpdate = node.children[2]
+            forBlock = node.children[3]
+            forStartLabel = next(self.labelGen)
+            # Create the variable declaration lines.
+            forVarLines = []
+            self._generateTACHelper(forVar, forVarLines)
+            # Create the conditional lines.
+            forCondLines = []
+            forCondVar = self._generateAlgebraTAC(forCond, forCondLines)
+            # Create the reassign lines.
+            forUpdateLines = []
+            self._generateTACHelper(forUpdate, forUpdateLines)
+            # Create the body lines.
+            forBlockLines = []
+            self._generateTACHelper(forBlock, forBlockLines)
+            # Create the TAC lines.
+            forEndLabel = next(self.labelGen)
+            forCondTmp = next(self.tmpGen)
+            currentLines.extend(forVarLines)
+            currentLines.append(f'LABEL {forStartLabel}')
+            currentLines.extend(forCondLines)
+            currentLines.append(f'{forCondTmp} = not {forCondVar}')
+            currentLines.append(f'{forCondTmp} IFGOTO {forEndLabel}')
+            currentLines.extend(forBlockLines)
+            currentLines.extend(forUpdateLines)
+            currentLines.append(f'GOTO {forStartLabel}')
+            currentLines.append(f'LABEL {forEndLabel}')
         else:
             for c in node.children:
                 self._generateTACHelper(c, currentLines)

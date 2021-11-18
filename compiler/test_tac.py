@@ -194,6 +194,38 @@ class TestTac(unittest.TestCase):
         for i in range(len(lines)):
             self.assertEqual(lines[i], expectedLines[i])
 
+    def testForStatement(self):
+        prog = '''
+        for (int i = 0; i < 9; i = i+1) {
+            int a = 5;
+            print(a);
+        }
+        int i = 2;
+        '''
+        lines = self._createTac(prog)
+        expectedLines = '''declareint i
+        i = 0
+        LABEL L0
+        t0 = i < 9
+        t2 = not t0
+        t2 IFGOTO L1
+        declareint a
+        a = 5
+        print a
+        t1 = i + 1
+        i = t1
+        GOTO L0
+        LABEL L1
+        declareint i
+        i = 2
+        '''
+        expectedLines = expectedLines.split('\n')
+        for i in range(len(expectedLines)):
+            expectedLines[i] = expectedLines[i].strip()
+        self.assertEqual(len(lines), 15)
+        for i in range(len(lines)):
+            self.assertEqual(lines[i], expectedLines[i])
+
     def testIntDcl(self):
         lines = self._createTac('int a = 2;')
         self.assertEqual(len(lines), 2)
