@@ -1,6 +1,6 @@
 declareint a
 a = 5
-t0 = not False
+t0 = False
 t8 = not t0
 t8 IFGOTO L0
 t1 = 5 * 2

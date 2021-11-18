@@ -173,8 +173,17 @@ class TACProcessor:
                 else:
                     # Process condition
                     init = []
-                    cvar = self._generateAlgebraTAC(
-                        currentNode.children[0], init)
+                    elifcondtype = currentNode.children[0].type
+                    if elifcondtype in SemanticAnalyzer.comparisonOp or elifcondtype in SemanticAnalyzer.boolOp:
+                        cvar = self._generateAlgebraTAC(
+                            currentNode.children[0], init)
+                    else:
+                        elifCondVarValue = self._getNodeValue(
+                            currentNode.children[0])
+                        cvar = next(self.tmpGen)
+                        init.append(f'{cvar} = {elifCondVarValue}')
+                    # cvar = self._generateAlgebraTAC(
+                    #     currentNode.children[0], init)
                     conditions.append(init)
                     conditionsVar.append(cvar)
                     # Create next label
