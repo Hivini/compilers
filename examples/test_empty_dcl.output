@@ -1,0 +1,19 @@
+declarestring c
+declarebool b
+t0 = 2 > 2
+t1 = 2 >= 2
+t2 = t0 and t1
+t3 = 2 < 2
+t4 = t2 or t3
+t5 = 2 <= 2
+t6 = t4 and t5
+t7 = 2 == 2
+t8 = t6 or t7
+t9 = 2 != 2
+t10 = t8 and t9
+declarebool a
+a = t10
+t11 = True and False
+t12 = t11 or True
+b = t12
+c = "hola"

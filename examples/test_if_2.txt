@@ -1,0 +1,21 @@
+int a = 3;
+if (1 <= 2) {
+    print(1 + 2);
+}
+elif (2 == 5) {
+    int c = 2;
+    print(a);
+}
+elif (2 == 4) {
+    print(a);
+}
+elif (2 == 3) {
+    int b = 3;
+    int c;
+    if (b > 3) {
+        c = 3;
+    }
+}
+else {
+    print(2 != 5 and 4 != 4);
+}

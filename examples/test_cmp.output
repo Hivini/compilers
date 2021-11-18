@@ -1,0 +1,24 @@
+declarebool a
+a = True
+declarebool b
+b = False
+declareint c
+c = 1
+declareint d
+d = 2
+t0 = a == b
+t1 = c != d
+t2 = t0 and t1
+declarebool asd
+asd = t2
+print asd
+t3 = a != b
+print t3
+t4 = c >= d
+print t4
+t5 = d <= c
+print t5
+t6 = d > c
+print t6
+t7 = c < d
+print t7

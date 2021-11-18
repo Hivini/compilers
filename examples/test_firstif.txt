@@ -1,0 +1,10 @@
+int a = 5;
+if (false) {
+    float c = 5 * 2;
+}
+elif (a == 5) {
+    float c = 5 * 3;
+}
+else {
+    float c = 5 * 4;
+}

@@ -146,7 +146,15 @@ class TACProcessor:
             # Get the if information
             ifNode = node.children[0]
             ifCondition = []
-            ifVar = self._generateAlgebraTAC(ifNode.children[0], ifCondition)
+            condType = ifNode.children[0].type
+            if condType in SemanticAnalyzer.comparisonOp or condType in SemanticAnalyzer.boolOp:
+                ifVar = self._generateAlgebraTAC(
+                    ifNode.children[0], ifCondition)
+            else:
+                ifCondVarValue = self._getNodeValue(ifNode.children[0])
+                ifVar = next(self.tmpGen)
+                ifCondition.append(f'{ifVar} = {ifCondVarValue}')
+            # ifVar = self._generateAlgebraTAC(ifNode.children[0], ifCondition)
             ifBlockLines = []
             self._generateTACHelper(ifNode.children[1], ifBlockLines)
             # Define elements
@@ -198,17 +206,25 @@ class TACProcessor:
             if continueLabel != None:
                 currentLines.append(f'LABEL {continueLabel}')
         elif node.type == ASTTypes.WHILE_STATEMENT:
+            condType = node.children[0].type
             whileCondition = []
-            whileVar = self._generateAlgebraTAC(
-                node.children[0], whileCondition)
+            if condType in SemanticAnalyzer.comparisonOp or condType in SemanticAnalyzer.boolOp or condType == ASTTypes.VARIABLE:
+                whileVar = self._generateAlgebraTAC(
+                    node.children[0], whileCondition)
+            else:
+                whileVarValue = self._getNodeValue(node.children[0])
+                whileVar = next(self.tmpGen)
+                whileCondition.append(f'{whileVar} = {whileVarValue}')
             whileStartLabel = next(self.labelGen)
             whileBlockLines = []
             self._generateTACHelper(node.children[1], whileBlockLines)
             whileEndLabel = next(self.labelGen)
             # Start the while loop
+            forCondTmp = next(self.tmpGen)
             currentLines.append(f'LABEL {whileStartLabel}')
             currentLines.extend(whileCondition)
-            currentLines.append(f'{whileVar} IFGOTO {whileEndLabel}')
+            currentLines.append(f'{forCondTmp} = not {whileVar}')
+            currentLines.append(f'{forCondTmp} IFGOTO {whileEndLabel}')
             # While body
             currentLines.extend(whileBlockLines)
             # End of while
@@ -225,7 +241,14 @@ class TACProcessor:
             self._generateTACHelper(forVar, forVarLines)
             # Create the conditional lines.
             forCondLines = []
-            forCondVar = self._generateAlgebraTAC(forCond, forCondLines)
+            condType = forCond.type
+            if condType in SemanticAnalyzer.comparisonOp or condType in SemanticAnalyzer.boolOp:
+                forCondVar = self._generateAlgebraTAC(
+                    forCond, forCondLines)
+            else:
+                forCondVarValue = self._getNodeValue(forCond)
+                forCondVar = next(self.tmpGen)
+                forCondLines.append(f'{forCondVar} = {forCondVarValue}')
             # Create the reassign lines.
             forUpdateLines = []
             self._generateTACHelper(forUpdate, forUpdateLines)
@@ -252,11 +275,3 @@ class TACProcessor:
         lines = []
         self._generateTACHelper(self.astroot, lines)
         return lines
-
-    def generateTACPrint(self):
-        lines = []
-        self._generateTACHelper(self.astroot, lines)
-        i = 1
-        for line in lines:
-            print(f'{i})\t{line}')
-            i += 1

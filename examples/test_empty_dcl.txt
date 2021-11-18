@@ -1,0 +1,5 @@
+string c;
+bool b;
+bool a = (2 > 2) and (2 >= 2) or (2 < 2) and (2 <= 2) or (2 == 2) and (2 != 2);
+b = true and false or true;
+c = "hola";

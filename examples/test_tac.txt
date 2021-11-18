@@ -1,0 +1,13 @@
+int iempty;
+float fempty;
+string sempty;
+bool bempty;
+float d;
+float a = -(5 + 7.0);
+int b = 6;
+float c = a / b + (6 - 2) / 2 ^ 2;
+sempty = "hola" + " mundo";
+string whole = sempty + "!";
+bempty = true;
+print("hola" + "d" + "d");
+print(b + 2);

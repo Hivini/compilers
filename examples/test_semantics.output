@@ -1,0 +1,9 @@
+t0 = True != "true"
+declarebool op
+op = t0
+t1 = 1 > 2
+t2 = 3 >= 4
+t3 = t1 != t2
+declarebool a
+a = t3
+a = True

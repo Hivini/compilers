@@ -1,0 +1,12 @@
+int precedence = 4/2^2+2*6/4-1;
+int a = -((3 + 3) / 2 * (2+2) * 2);
+float b = (3 + 2) * 1.5;
+string c = "hola" + " mundo";
+bool d = true;
+bool e = false;
+float c2 = 1;
+print(a);
+print(b);
+print(c);
+print(d);
+print(e);

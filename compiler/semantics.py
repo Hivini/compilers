@@ -15,6 +15,8 @@ class SemanticAnalyzer:
     comparisonOp = [ASTTypes.CMP_EQUAL, ASTTypes.CMP_NOT_EQUAL, ASTTypes.CMP_GREATER_EQUAL,
                     ASTTypes.CMP_LESS_EQUAL, ASTTypes.CMP_GREATER, ASTTypes.CMP_LESS]
     boolOp = [ASTTypes.AND_OP, ASTTypes.OR_OP]
+    typeNodes = [ASTTypes.INT, ASTTypes.FLOAT, ASTTypes.STRING,
+                 ASTTypes.BOOL_FALSE, ASTTypes.BOOL_TRUE]
 
     def __init__(self, root: ASTNode, progLines: List[str]) -> None:
         self.root = root

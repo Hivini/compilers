@@ -175,7 +175,8 @@ class TestTac(unittest.TestCase):
         declareint i
         i = 0
         LABEL L0
-        a IFGOTO L2
+        t3 = not a
+        t3 IFGOTO L2
         print a
         t0 = i == 10
         t1 = not t0
@@ -190,7 +191,7 @@ class TestTac(unittest.TestCase):
         expectedLines = expectedLines.split('\n')
         for i in range(len(expectedLines)):
             expectedLines[i] = expectedLines[i].strip()
-        self.assertEqual(len(lines), 16)
+        self.assertEqual(len(lines), 17)
         for i in range(len(lines)):
             self.assertEqual(lines[i], expectedLines[i])
 

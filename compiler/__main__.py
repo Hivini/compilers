@@ -21,6 +21,7 @@ def PrintAST(logger, current, depth):
     for c in current.children:
         PrintAST(logger, c, depth+1)
 
+
 def PrintSymbolTable(logger, current, depth):
     spaces = '\t'*depth
     logger.LogDebug(f'{spaces}-{current.table}')
@@ -35,6 +36,8 @@ def Run():
         "file_path", help="Location of the file to compile, relative to current location.")
     parser.add_argument(
         "-v", "--verbose", help="Add output prints to show debug elements.", action="store_true")
+    parser.add_argument(
+        "-tac", "--tacprint", help="Outputs the TAC as a print instead of a file.", action="store_true")
     args = parser.parse_args()
     file_path = args.file_path
 
@@ -82,7 +85,27 @@ def Run():
             logger.LogDebug('Symbol Tables after semantics:')
             PrintSymbolTable(logger, parserInstance.symbolTable, 0)
         tacProcessor = TACProcessor(root)
-        tacProcessor.generateTACPrint()
+        taclines = tacProcessor.generateTAC()
+        if (args.tacprint):
+            tacBanner = '=' * 10
+            logger.LogDebug(f'{tacBanner} TAC {tacBanner}')
+            i = 1
+            for line in taclines:
+                logger.LogDebug(f'{i})\t{line}')
+                i += 1
+        else:
+            try:
+                filename = file_path.split('.')[0]
+                f = open(f'{filename}.output', 'w')
+                # We add the end of line first so the writelines functions
+                # handle end of line character for us based on the OS.
+                for i in range(len(taclines)):
+                    taclines[i] = taclines[i] + '\n'
+                f.writelines(taclines)
+                f.close()
+            except:
+                logger.LogError('Error ocurred when writing the file')
+                sys.exit(1)
         logger.LogSuccess('Successfully compiled!')
     except ParserError:
         logger.LogError(parserInstance.first_error)
